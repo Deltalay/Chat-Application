@@ -3,7 +3,6 @@ package client;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Connection {
 	private String address;
@@ -14,12 +13,14 @@ public class Connection {
 		this.port = port;
 	}
 	
-	void run() throws UnknownHostException, IOException {
+	void run() {
 		try (Socket socket = new Socket(address, port)) {
 			PrintWriter pw = new PrintWriter(socket.getOutputStream());
 			
 			pw.println("This message is sent from a client");
 			pw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

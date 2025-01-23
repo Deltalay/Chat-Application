@@ -10,8 +10,11 @@ public class ChatServer {
 	public static void main(String[] args) {
 		try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 			
-			ClientHandler ch = new ClientHandler(serverSocket.accept());
-			ch.run();
+			while (true) {
+				new ClientHandler(serverSocket.accept()).start();;
+					
+			}
+
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
