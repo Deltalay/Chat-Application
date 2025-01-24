@@ -3,6 +3,7 @@ package server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientHandler extends Thread {
@@ -22,24 +23,42 @@ public class ClientHandler extends Thread {
 			
 			isr = new InputStreamReader(socket.getInputStream());
 			BufferedReader br = new BufferedReader(isr);
+			PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+			pw.println("Welcome, What's ur name");
 			
 			String username; 
 			username = br.readLine();
-			System.out.println(username + " Connected");
+			System.out.println(username + " Connected: " + socket.getInetAddress());
 			
 			String str = null;
-			while (true) {
-
-				str = br.readLine();
+//			while (true) {
+//
+//				str = br.readLine();
+//			
+////				if (str.equals("close")) System.out.println(username + " is closed");
+//				
+//				if (str != null) {
+//					System.out.println(username + ": " + str);
+//					pw.println(str);
+//					pw.flush();
+//					str = null;
+//				}
+//				
+//				
+//			}
 			
-//				if (str.equals("close")) System.out.println(username + " is closed");
+			while ((str = br.readLine()) != null) {
 				
-				if (str != null) {
-					System.out.println(username + ": " + str);
-					str = null;
+				if (str.equals("close")) {
+					System.out.println(username + " is disconnected");
+					break;
 				}
+
+				ChatServer.broadcastMessages(str, username);
 				
-				
+				System.out.println(username + ": " + str);
+//				pw.println(str);
+//				pw.flush();
 			}
 			
 		} catch (IOException e) {
