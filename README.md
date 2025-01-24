@@ -1,6 +1,6 @@
 # Compile Code
 
-javac -d bin/ src/server/ChatServer.java src/client/ChatClient.java ...
+>javac -d bin/ src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java
 
 
 
