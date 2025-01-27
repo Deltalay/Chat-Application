@@ -6,14 +6,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.Scanner;
 
 public class Connection {
 	
 	private String address;
 	private int port;
-	private String username;
-	
+	boolean loginIn;
 	InputStreamReader ireader;
 	
 	Connection(String address, int port) {
@@ -21,62 +19,57 @@ public class Connection {
 		this.port = port;
 	}
 	
-	void run(){
-		System.out.println("What is your name? ");
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("Type: ");
-		username = scanner.nextLine();
-		System.out.print("\033[1A"); // Move up one line
-        System.out.print("\033[2K"); // Clear the line
-        System.out.print("\033[1A"); // Move up another line
-        System.out.print("\033[2K"); // Clear the line
-		try (Socket socket = new Socket(address, port)) {
-			PrintWriter pw = new PrintWriter(socket.getOutputStream());
-			System.out.println("connected to server");
-			pw.println(username);
-			pw.flush();
-			String message = null;
-			while (true) {
-				System.out.print("Type: ");
-				message = scanner.nextLine();
-				System.out.print("\033[1A"); // Move up one line
-                System.out.print("\033[2K"); // Clear the line
-                System.out.println(username+": " + message);
-				pw.println(message);
-				pw.flush();
-				if(message.equals("close")){
-					break;
-				}
-			}
-
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+	
 	void run(){
 //	    System.out.println("What is your name? ");
 	    Scanner scanner = new Scanner(System.in);
 //	    
 
 	    try (Socket socket = new Socket(address, port)) {
-	    	
-	    	System.out.println("connected to server");
-	    	ireader = new InputStreamReader(socket.getInputStream());
-	    	BufferedReader br = new BufferedReader(ireader);
-	    	
-	    	String systemMessage = br.readLine();
-	    	System.out.println(systemMessage);
-	    	
-	    	PrintWriter pw = new PrintWriter(socket.getOutputStream());
-	    	System.out.print("Type: ");
-		    String username = scanner.nextLine();
-		    System.out.print("\033[1A"); // Move up one line
-		    System.out.print("\033[2K"); // Clear the line
-		    System.out.print("\033[1A"); // Move up another line
-		    System.out.print("\033[2K"); // Clear the line
-	      	pw.println(username);
-	      	pw.flush();
-	      	
+	    	System.out.println("Please Login");
+            ireader = new InputStreamReader(socket.getInputStream());
+            BufferedReader br = new BufferedReader(ireader);
+            PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+
+            boolean loggedIn = false;
+
+            // Login Loop
+            while (!loggedIn) {
+                String systemMessage = br.readLine();
+                System.out.println(systemMessage);
+
+                System.out.print("Type: ");
+                String username = scanner.nextLine();
+				System.out.print("\033[1A"); // Move up one line
+				System.out.print("\033[2K"); // Clear the line
+				System.out.print("\033[1A"); // Move up another line
+				System.out.print("\033[2K"); // Clear the line
+                pw.println(username);
+
+                systemMessage = br.readLine();
+                System.out.println(systemMessage);
+
+                System.out.print("Type: ");
+                String password = scanner.nextLine();
+				System.out.print("\033[1A"); // Move up one line
+				System.out.print("\033[2K"); // Clear the line
+				System.out.print("\033[1A"); // Move up another line
+				System.out.print("\033[2K"); // Clear the line
+                pw.println(password);
+
+                // Check login result from server
+                systemMessage = br.readLine();
+                if (systemMessage.equals("Login successful!")) {
+                    loggedIn = true;
+					System.out.print("\033[1A"); // Move up another line
+					System.out.print("\033[2K"); // Clear the line
+					System.out.println(systemMessage);
+                }else{
+					System.out.print("\033[1A"); // Move up another line
+					System.out.print("\033[2K"); // Clear the line
+					System.out.println(systemMessage);
+				}
+            }
 	      	new Thread(new MessageReceiver(socket)).start();
 	      	
 	      	String message = null;
