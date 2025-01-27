@@ -11,7 +11,11 @@ public class ClientHandler extends Thread {
 	public Socket socket;
 	public String username;
 	
-	
+	dbconnection db=new dbconnection();
+	boolean isAuthenticated = false;
+	String username; 
+	String password;
+
 	InputStreamReader isReader;
 	BufferedReader bReader;
 	PrintWriter pWriter;
@@ -28,44 +32,59 @@ public class ClientHandler extends Thread {
 //		System.out.println("Client Connected");
 		
 		try {
+			isr = new InputStreamReader(socket.getInputStream());
+			BufferedReader br = new BufferedReader(isr);
+			PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
 			
-			isReader = new InputStreamReader(socket.getInputStream());
-			bReader = new BufferedReader(isReader);
-			pWriter = new PrintWriter(socket.getOutputStream(), true);
-			
-//			pWriter.println("Welcome, What's ur name");
-//						
-			this.username = bReader.readLine();
-			System.out.println(username + " Connected");
-			
-			String message;
-			
-			while ((message = bReader.readLine()) != null) {
+			while(!isAuthenticated) {
+				pw.println("Enter your username");
+				username = br.readLine();
 				
-				if (message.equals("close")) {
-					System.out.println(username + " is disconnected");
-//					ChatServer.removeDisconnectedClient(username);
-					cManager.removeclient(message);
-					break;
-				}
+				pw.println("Enter your password");
+				password = br.readLine();
+				db.run(username,password);
+				isAuthenticated = db.run(username, password);
+				if (isAuthenticated) {
+                    pw.println("Login successful!");
+                } else {
+                    pw.println("Invalid username or password. Please try again.");
+                }
+			}
+			System.out.println(username + " Connected to server ");
+			String str = null;
+			
+//			while (true) {
+//
+//				str = br.readLine();
+//			
+////				if (str.equals("close")) System.out.println(username + " is closed");
+//				
+//				if (str != null) {
+//					System.out.println(username + ": " + str);
+//					pw.println(str);
+//					pw.flush();
+//					str = null;
+//				}
+//				
+//				
+//			}
+			
+			while ((str = br.readLine()) != null) {
+                if (str.equals("close")) {
+                    System.out.println(username + " is disconnected");
+                    break;
+                }
 
-				if (message.startsWith("/msg")) {
-					
-					String[] parts = message.split(" ");
-					String sendTo = parts[1];
-					String privateMessage = message.substring(message.indexOf(sendTo) + sendTo.length() + 1);
-					
-					cManager.privateMessage(privateMessage, username, sendTo);
-				} 
+				ChatServer.broadcastMessages(str, username);
 				
-				else cManager.broadcastMessages(message, this);
-				
-				System.out.println(username + ": " + message); 
+				System.out.println(username + ": " + str);
+//				pw.println(str);
+//				pw.flush();
 			}
 			
 		} catch (IOException e) {
-			
-//			e.printStackTrace();
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			
 			try {

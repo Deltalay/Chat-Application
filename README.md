@@ -1,6 +1,6 @@
 # Compile Code
 
->javac -d bin/ src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java
+>javac -d bin/ src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java src/client/MessageReceiver.java
 
 
 
@@ -13,3 +13,15 @@
  Client Side
 
 * java -cp bin/ client.ChatClient
+
+# Compile Code include Database
+
+>javac -d bin/ -cp lib/mysql-connector-j-9.2.0.jar src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java src/client/MessageReceiver.java
+
+
+
+# Run Code 
+
+ Server Side
+
+* java -cp "bin;lib/mysql-connector-j-9.2.0.jar;." server.ChatServer
