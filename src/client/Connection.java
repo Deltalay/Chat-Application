@@ -21,15 +21,15 @@ public class Connection {
 	
 	
 	void run(){
-	    System.out.println("What is your name? ");
+//	    System.out.println("What is your name? ");
 		Scanner scanner = new Scanner(System.in);
 		
-    	System.out.print("Type: ");
-	    String username = scanner.nextLine();
-	    System.out.print("\033[1A"); // Move up one line
-	    System.out.print("\033[2K"); // Clear the line
-	    System.out.print("\033[1A"); // Move up another line
-	    System.out.print("\033[2K"); // Clear the line
+//    	System.out.print("Type: ");
+//	    String username = scanner.nextLine();
+//	    System.out.print("\033[1A"); // Move up one line
+//	    System.out.print("\033[2K"); // Clear the line
+//	    System.out.print("\033[1A"); // Move up another line
+//	    System.out.print("\033[2K"); // Clear the line
 //	    
 
 	    try (Socket socket = new Socket(address, port)) {
