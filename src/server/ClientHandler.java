@@ -8,11 +8,19 @@ import java.net.Socket;
 
 public class ClientHandler extends Thread {
 	
-	private Socket socket;
-	InputStreamReader isr;
+	public Socket socket;
+	public String username;
 	
-	ClientHandler(Socket socket) {
+	
+	InputStreamReader isReader;
+	BufferedReader bReader;
+	PrintWriter pWriter;
+	ClientManager cManager;
+	
+	ClientHandler(Socket socket, ClientManager cManager) {
+		
 		this.socket = socket;
+		this.cManager = cManager;
 	}
 	
 	public void run() {
@@ -21,49 +29,55 @@ public class ClientHandler extends Thread {
 		
 		try {
 			
-			isr = new InputStreamReader(socket.getInputStream());
-			BufferedReader br = new BufferedReader(isr);
-			PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
-			pw.println("Welcome, What's ur name");
+			isReader = new InputStreamReader(socket.getInputStream());
+			bReader = new BufferedReader(isReader);
+			pWriter = new PrintWriter(socket.getOutputStream(), true);
 			
-			String username; 
-			username = br.readLine();
-			System.out.println(username + " Connected: " + socket.getInetAddress());
+//			pWriter.println("Welcome, What's ur name");
+//						
+			this.username = bReader.readLine();
+			System.out.println(username + " Connected");
 			
-			String str = null;
-//			while (true) {
-//
-//				str = br.readLine();
-//			
-////				if (str.equals("close")) System.out.println(username + " is closed");
-//				
-//				if (str != null) {
-//					System.out.println(username + ": " + str);
-//					pw.println(str);
-//					pw.flush();
-//					str = null;
-//				}
-//				
-//				
-//			}
+			String message;
 			
-			while ((str = br.readLine()) != null) {
+			while ((message = bReader.readLine()) != null) {
 				
-				if (str.equals("close")) {
+				if (message.equals("close")) {
 					System.out.println(username + " is disconnected");
+//					ChatServer.removeDisconnectedClient(username);
+					cManager.removeclient(message);
 					break;
 				}
 
-				ChatServer.broadcastMessages(str, username);
+				if (message.startsWith("/msg")) {
+					
+					String[] parts = message.split(" ");
+					String sendTo = parts[1];
+					String privateMessage = message.substring(message.indexOf(sendTo) + sendTo.length() + 1);
+					
+					cManager.privateMessage(privateMessage, username, sendTo);
+				} 
 				
-				System.out.println(username + ": " + str);
-//				pw.println(str);
-//				pw.flush();
+				else cManager.broadcastMessages(message, this);
+				
+				System.out.println(username + ": " + message); 
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+//			e.printStackTrace();
+		} finally {
+			
+			try {
+				socket.close();
+				pWriter.close();
+				bReader.close();
+				
+			} catch (IOException e) {
+				
+				e.printStackTrace();
+			}
+			
 		}
 		
 	}

@@ -20,8 +20,15 @@ public class Connection {
 	}
 	
 	void run(){
-//	    System.out.println("What is your name? ");
-	    Scanner scanner = new Scanner(System.in);
+	    System.out.println("What is your name? ");
+		Scanner scanner = new Scanner(System.in);
+		
+    	System.out.print("Type: ");
+	    String username = scanner.nextLine();
+	    System.out.print("\033[1A"); // Move up one line
+	    System.out.print("\033[2K"); // Clear the line
+	    System.out.print("\033[1A"); // Move up another line
+	    System.out.print("\033[2K"); // Clear the line
 //	    
 
 	    try (Socket socket = new Socket(address, port)) {
@@ -30,16 +37,12 @@ public class Connection {
 	    	ireader = new InputStreamReader(socket.getInputStream());
 	    	BufferedReader br = new BufferedReader(ireader);
 	    	
-	    	String systemMessage = br.readLine();
-	    	System.out.println(systemMessage);
+//	    	String systemMessage = br.readLine();
+//	    	System.out.println(systemMessage);
+	    	System.out.println("Welcome to the group chat, " + username);
 	    	
 	    	PrintWriter pw = new PrintWriter(socket.getOutputStream());
-	    	System.out.print("Type: ");
-		    String username = scanner.nextLine();
-		    System.out.print("\033[1A"); // Move up one line
-		    System.out.print("\033[2K"); // Clear the line
-		    System.out.print("\033[1A"); // Move up another line
-		    System.out.print("\033[2K"); // Clear the line
+
 	      	pw.println(username);
 	      	pw.flush();
 	      	
@@ -70,6 +73,6 @@ public class Connection {
 	    }
 	    catch (IOException e) {
 	      e.printStackTrace();
-	    }
+	    } 
 	}
 }
