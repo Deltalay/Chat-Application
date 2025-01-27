@@ -1,6 +1,6 @@
 # Compile Code
 
->javac -d bin/ src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java src/client/MessageReceiver.java
+>javac -d bin src\server\*.java src\client\*.java -cp lib/mysql-connector-j-9.2.0.jar src\utils\*.java
 
 
 
