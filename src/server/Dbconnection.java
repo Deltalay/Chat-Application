@@ -1,12 +1,14 @@
 package server;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class dbconnection {
+public class Dbconnection {
 	
     String url="jdbc:mysql://localhost:3306/";
     String dbusername = "root";
-    String dbpassword = ".";
+    String dbpassword = "";
     
     private String username;
     private String password;
@@ -69,7 +71,60 @@ public class dbconnection {
         
         return false;
     }
-    
+    String private_chat(String sender,String receiver){
+        String MHistory="";
+        List<String> messageList = new ArrayList<>();
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            url = "jdbc:mysql://localhost:3306/chat";
+            Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+            Statement stmt = conn.createStatement();
+
+            String query = "SELECT username, receiver, message_text FROM message";
+            ResultSet rs = stmt.executeQuery(query);
+            
+            while (rs.next()) {
+            	
+                String s=rs.getString("username");
+                String r = rs.getString("receiver");
+                String m = rs.getString("message_text");  
+                
+                if ((sender.equals(s) && receiver.equals(r)) || (sender.equals(r) && receiver.equals(s))) {
+                    messageList.add(s + ": " + m);
+                }
+            }
+            
+            for (int i = 0; i < messageList.size(); i++) {
+                MHistory += messageList.get(i);
+                if (i < messageList.size() - 1) {
+                    MHistory += "\n";
+                }
+            }
+            conn.close();
+            
+        }catch(Exception e) {
+        	
+            e.printStackTrace();
+        }
+        return MHistory;
+    }
+    void save_message(String sender, String receiver, String message){
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            url = "jdbc:mysql://localhost:3306/chat";
+            Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+            Statement stmt = conn.createStatement();
+
+            String query = "INSERT INTO message (username, receiver, message_text) VALUES ('" + sender + "', '" + receiver + "', '" + message + "');";
+            stmt.executeUpdate(query);
+            
+            conn.close();
+            
+        }catch(Exception e) {
+        	
+            e.printStackTrace();
+        }
+    }
     public void setUser(String user) {
     	
         this.username = user;
