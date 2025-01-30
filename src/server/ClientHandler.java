@@ -55,6 +55,8 @@ public class ClientHandler extends Thread {
 			System.out.println(username + " Connected to server ");
 			cManager.addClient(username, this);
 			
+			cManager.addClientConnection(username, "");
+			
 			String message;
 	
 			while ((message = bReader.readLine()) != null) {
@@ -70,10 +72,26 @@ public class ClientHandler extends Thread {
                     
                     String[] parts = message.split(" ");
                     String sendTo = parts[1];
-                    String privateMessage = message.substring(message.indexOf(sendTo) + sendTo.length() + 1);
-                    
-                    cManager.privateMessage(privateMessage, username, sendTo);
-                 } 
+					pWriter.println("\033[H\033[2J"); // Clears the screen
+                	pWriter.flush();
+                    cManager.privateMessage(username, sendTo);
+					while ((message = bReader.readLine()) != null) {
+						cManager.addClientConnection(username, sendTo);
+						if (message.equals("/quit")) {
+							pWriter.println("\033[H\033[2J"); // Clears the screen
+                			pWriter.flush();
+							System.out.println(username + " quit private message with " + sendTo);
+							cManager.addClientConnection(username, "");
+							break;
+						}
+						
+						else cManager.sendprivateMessage(username, sendTo, message);
+						
+						System.out.println(username + ": " + message);
+		
+					}
+
+                } 
 
                 else cManager.broadcastMessages(message, this);
 				
