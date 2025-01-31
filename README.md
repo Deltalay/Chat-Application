@@ -8,20 +8,8 @@
 
  Server Side
 
-* java -cp bin/ server.ChatServer
+* java -cp "bin;lib/mysql-connector-j-9.2.0.jar;." server.ChatServer
 
  Client Side
 
 * java -cp bin/ client.ChatClient
-
-# Compile Code include Database
-
->javac -d bin/ -cp lib/mysql-connector-j-9.2.0.jar src/server/ChatServer.java src/client/ChatClient.java src/server/ClientHandler.java src/client/Connection.java src/client/MessageReceiver.java
-
-
-
-# Run Code 
-
- Server Side
-
-* java -cp "bin;lib/mysql-connector-j-9.2.0.jar;." server.ChatServer
