@@ -7,8 +7,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class DbConnection {
 
+	
     String url = "jdbc:mysql://localhost:3306/";
     String dbusername = "root";
     String dbPassword = getDbPassword();
