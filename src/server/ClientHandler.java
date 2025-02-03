@@ -3,9 +3,12 @@ package server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import client.User;
 import utils.DbConnection;
 
 public class ClientHandler extends Thread {
@@ -13,6 +16,7 @@ public class ClientHandler extends Thread {
 	public Socket socket;
 	public String username;
 	String password;
+	User user;
 	
 	DbConnection db = new DbConnection();
 	boolean isAuthenticated = false;
@@ -32,28 +36,39 @@ public class ClientHandler extends Thread {
 		
 		try {
 			
+			
 			isReader = new InputStreamReader(socket.getInputStream());
 			bReader = new BufferedReader(isReader);
 			pWriter = new PrintWriter(socket.getOutputStream(), true);
 			
 			while (!isAuthenticated) {
 				
-				pWriter.println("Enter your username");
-				username = bReader.readLine();
+				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				user = (User) ois.readObject();
+				username = user.username;
+								
+//				db.run(user.username, user.password);
+				isAuthenticated = db.run(user.username, user.password);
+				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 				
-				pWriter.println("Enter your password");
-				password = bReader.readLine();
+				if (isAuthenticated) oos.writeObject("Login successful!");
 				
-				db.run(username,password);
-				isAuthenticated = db.run(username, password);
-				
-				if (isAuthenticated) pWriter.println("Login successful!");
-                else pWriter.println("Invalid username or password. Please try again.");
+                else {
+                	
+//                	pWriter.println("Invalid username or password. Please try again.");
+//                	ois.close();
+//                	socket.close();
+                	
+                    oos.writeObject("login failed");
+                    socket.close();
+                    System.out.println("Login failed. Socket closed.");
+                	
+                }
                 
 			}
 			
 			System.out.println(username + " Connected to server ");
-			cManager.addClient(username, this);
+			cManager.addClient(user.username, this);
 			
 			cManager.addClientConnection(username, "");
 			
@@ -101,7 +116,10 @@ public class ClientHandler extends Thread {
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+//			e.printStackTrace();
 		} finally {
 			
 			try {
@@ -111,7 +129,7 @@ public class ClientHandler extends Thread {
 				
 			} catch (IOException e) {
 				
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			
 		}
