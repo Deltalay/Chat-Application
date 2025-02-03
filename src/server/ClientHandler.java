@@ -6,16 +6,17 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import utils.DbConnection;
+
 public class ClientHandler extends Thread {
 	
 	public Socket socket;
 	public String username;
 	String password;
 	
-	Dbconnection db=new Dbconnection();
+	DbConnection db = new DbConnection();
 	boolean isAuthenticated = false;
 	
-
 	InputStreamReader isReader;
 	BufferedReader bReader;
 	PrintWriter pWriter;
@@ -29,14 +30,13 @@ public class ClientHandler extends Thread {
 	
 	public void run() {
 		
-//		System.out.println("Client Connected");
-		
 		try {
+			
 			isReader = new InputStreamReader(socket.getInputStream());
 			bReader = new BufferedReader(isReader);
 			pWriter = new PrintWriter(socket.getOutputStream(), true);
 			
-			while(!isAuthenticated) {
+			while (!isAuthenticated) {
 				
 				pWriter.println("Enter your username");
 				username = bReader.readLine();
@@ -51,8 +51,8 @@ public class ClientHandler extends Thread {
                 else pWriter.println("Invalid username or password. Please try again.");
                 
 			}
-			System.out.println(username + " Connected to server ");
 			
+			System.out.println(username + " Connected to server ");
 			cManager.addClient(username, this);
 			
 			cManager.addClientConnection(username, "");
