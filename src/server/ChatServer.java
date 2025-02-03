@@ -23,17 +23,10 @@ public class ChatServer {
 			ClientManager cManager = new ClientManager();
 			
 			while (true) {
+				
 				Socket clientSocket = serverSocket.accept();
-				
-//				new ClientHandler(clientSocket).start();;
-//				clientSockets.add(clientSocket);
-				
 				ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
 				cHandler.start();
-				
-				cManager.addClient(cHandler.username, cHandler);
-
-				
 			}
 
 			

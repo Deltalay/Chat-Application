@@ -3,11 +3,14 @@ package server;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import utils.DbConnection;
+
 public class ClientManager {
 	
 	private Map<String, ClientHandler> clientSockets = new ConcurrentHashMap<>();
 	private Map<String, String> clientconnection = new ConcurrentHashMap<>();
-	Dbconnection db = new Dbconnection();
+	
+	DbConnection db = new DbConnection();
 
 	public void addClient(String username, ClientHandler cHandler) {
 		
@@ -34,10 +37,12 @@ public class ClientManager {
 	public void privateMessage(String sendFrom, String sendTo) {
 		
 		clientSockets.get(sendFrom).pWriter.println("Private message with " + sendTo +" :");
-		String history=db.private_chat(sendFrom, sendTo);
+		String history = db.private_chat(sendFrom, sendTo);
 		clientSockets.get(sendFrom).pWriter.println(history);
 	}
-	public void sendprivateMessage(String sendFrom, String sendTo, String message){
+	
+	public void sendprivateMessage(String sendFrom, String sendTo, String message) {
+		
 		db.save_message(sendFrom, sendTo, message);
 		clientSockets.get(sendFrom).pWriter.println(sendFrom + ": " + message);
 		if (clientSockets.containsKey(sendTo)) {
