@@ -45,10 +45,11 @@ public class ClientHandler extends Thread {
 				
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 				user = (User) ois.readObject();
-				username = user.username;
+				username = user.getUsername();
+				password = user.getPassword();
 								
 //				db.run(user.username, user.password);
-				isAuthenticated = db.run(user.username, user.password);
+				isAuthenticated = db.run(username, password);
 				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 				
 				if (isAuthenticated) oos.writeObject("Login successful!");
@@ -68,7 +69,7 @@ public class ClientHandler extends Thread {
 			}
 			
 			System.out.println(username + " Connected to server ");
-			cManager.addClient(user.username, this);
+			cManager.addClient(username, this);
 			
 			cManager.addClientConnection(username, "");
 			
