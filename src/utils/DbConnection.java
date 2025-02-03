@@ -7,21 +7,15 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<<< HEAD:src/utils/DbConnection.java
 
 public class DbConnection {
-========
-public class Dbconnection {
->>>>>>>> 97a157829bd170f678f67af793e769a5c030bec6:src/server/Dbconnection.java
+
+
 	
     String url = "jdbc:mysql://localhost:3306/";
     String dbusername = "root";
-<<<<<<<< HEAD:src/utils/DbConnection.java
-    String dbPassword = getDbPassword();
-========
+    // String dbPassword = getDbPassword();
     String dbpassword = "";
->>>>>>>> 97a157829bd170f678f67af793e769a5c030bec6:src/server/Dbconnection.java
-    
     private String username;
     private String password;
     private String email;
