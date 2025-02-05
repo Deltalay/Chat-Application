@@ -32,7 +32,6 @@ public class Connection {
 	    try {
 			socket = new Socket(address, port);
             ireader = new InputStreamReader(socket.getInputStream());
-            PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
 
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(user);
@@ -59,26 +58,39 @@ public class Connection {
 	    try {
             ireader = new InputStreamReader(socket.getInputStream());
             PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+			
 
 	      	new Thread(new MessageReceiver(socket)).start();
 	      	
-	      	String message = null;
+			String content = null;
+			String receiver = null;
+			Message message = null;
+
 	      	while (true) {
-		        message = scanner.nextLine();
+				message = new Message(user.getUsername(),receiver,content);
+				content=scanner.nextLine();
+		        message.setContent(content);
 		        System.out.print("\033[1A");
 		        System.out.print("\033[2K");
-		        
 
-		        if(message.equals("close")) {
+		        if(message.getContent().equals("close")) {
 		        	System.out.println("See you next time.");
 			        pw.println(message);
 			        pw.flush();	
 		        	break;
 		        }
-		        
+		        if(message.getContent().startsWith("/msg")) {
+		        	System.out.println("Private system ");
 
-		        pw.println(message);
-		        pw.flush();		        
+					String[] parts = message.getContent().split(" ");
+                    receiver = parts[1];
+					message.setContent(message.getSender() + " is currently chatting with " + receiver);
+			        pw.println("/msg " + receiver);
+			        pw.flush();	
+		        }
+		        oos.writeObject(message);
+				oos.flush();	        
 
 		        
 	      	}
