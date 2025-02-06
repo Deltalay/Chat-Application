@@ -1,4 +1,4 @@
-package client;
+package utils;
 
 import java.io.Serializable;
 
@@ -8,9 +8,9 @@ public class Message implements Serializable{
     private String receiver;
     private String content;
 
-    public Message(String sender,String receiver, String content){
+    public Message(String sender,String receiver, String content) {
         this.sender = sender;
-        this.receiver = "";
+        this.receiver = receiver;
         this.content = content;
     }
 

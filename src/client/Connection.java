@@ -1,13 +1,15 @@
 package client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+
+import utils.Message;
+import utils.OpenChatSessionRequest;
+import utils.User;
 
 public class Connection {
 	
@@ -17,6 +19,7 @@ public class Connection {
 	InputStreamReader ireader;
 	User user;
 	Socket socket;
+	OpenChatSessionRequest openChatReq;
 	
 	Connection(String address, int port, User user) {
 		this.address = address;
@@ -26,12 +29,12 @@ public class Connection {
 	
 
 	
-	void login(){
+	void login() {
 		Scanner scanner = new Scanner(System.in);
 
 	    try {
 			socket = new Socket(address, port);
-            ireader = new InputStreamReader(socket.getInputStream());
+//            ireader = new InputStreamReader(socket.getInputStream());
 
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(user);
@@ -40,62 +43,88 @@ public class Connection {
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
       		String response = (String) ois.readObject();
       
-      	if (response.equals("login failed")) {
-            socket.close();
-            System.out.println("Please Login again");}
+      		if (response.equals("login failed")) {
+      		
+	            socket.close();
+	            System.out.println("Please Login again");
+	      	}
+      		
 			else {
 				System.out.println("\033[H\033[2J");
 				System.out.println(response);
 				ChatClient.isConnected = true;
+				
+				start(oos, ois);
 			}
-	    }
-	    catch (IOException | ClassNotFoundException e) {
+      		
+	    } catch (IOException | ClassNotFoundException e) {
 	      
+	    	e.printStackTrace();
 	    } 
 	}
-	void start(){
+	
+	void start(ObjectOutputStream oos, ObjectInputStream ois) {
+		
 		Scanner scanner = new Scanner(System.in);
+		
 	    try {
-            ireader = new InputStreamReader(socket.getInputStream());
-            PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+	    	
+//          ireader = new InputStreamReader(socket.getInputStream());
+//          PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+//			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			
-
-	      	new Thread(new MessageReceiver(socket)).start();
+	      	new Thread(new MessageReceiver(ois)).start();
 	      	
 			String content = null;
-			String receiver = null;
+			String receiver = "";
 			Message message = null;
 
 	      	while (true) {
-				message = new Message(user.getUsername(),receiver,content);
-				content=scanner.nextLine();
-		        message.setContent(content);
-		        System.out.print("\033[1A");
+
+				content = scanner.nextLine();
+				System.out.print("\033[1A");
 		        System.out.print("\033[2K");
 
-		        if(message.getContent().equals("close")) {
-		        	System.out.println("See you next time.");
-			        pw.println(message);
-			        pw.flush();	
-		        	break;
-		        }
-		        if(message.getContent().startsWith("/msg")) {
-		        	System.out.println("Private system ");
+//		        if(message.getContent().equals("close")) {
+//		        	System.out.println("See you next time.");
+//			        pw.println(message);
+//			        pw.flush();	
+//		        	break;
+//		        }
+//		        
+		        if (content.startsWith("/msg")) {
+		        	
+					System.out.print("\033[H\033[2J");
+					System.out.flush();
 
-					String[] parts = message.getContent().split(" ");
+					String[] parts = content.split(" ");
                     receiver = parts[1];
-					message.setContent(message.getSender() + " is currently chatting with " + receiver);
-			        pw.println("/msg " + receiver);
-			        pw.flush();	
+                    
+                    System.out.println("========== Private Chat With " + receiver + " ==========\n");
+                    openChatReq = new OpenChatSessionRequest(user.getUsername(), receiver);
+                    
+                    oos.writeObject(openChatReq);
+                    oos.flush();
+                    
+                    content = scanner.nextLine();
+    		        System.out.print("\033[1A");
+    		        System.out.print("\033[2K");
+                    
+//					message.setContent(message.getSender() + " is currently chatting with " + receiver);
+//			        pw.println("/msg " + receiver);
+//			        pw.flush();	
 		        }
+		        
+		        message = new Message(user.getUsername(), receiver, content);
+//		        message.setContent(content);
+		        
 		        oos.writeObject(message);
 				oos.flush();	        
-
-		        
+ 
 	      	}
 	    }
 	    catch (IOException e) {
+	    	
 	      e.printStackTrace();
 	    }
 	}

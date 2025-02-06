@@ -10,7 +10,6 @@ import java.util.List;
 
 public class DbConnection {
 
-	
     String url = "jdbc:mysql://localhost:3306/";
     String dbusername = "root";
     String dbPassword = getDbPassword();
@@ -97,10 +96,10 @@ public class DbConnection {
         return false;
     }
     
-    public String private_chat(String sender, String receiver) {
-    	
-        String MHistory="";
-        List <String> messageList = new ArrayList<>();
+    public List<Message> private_chat(String sender, String receiver) {
+
+        List <Message> messageList = new ArrayList<>();
+        Message message;
         
         try {
         	
@@ -132,17 +131,18 @@ public class DbConnection {
                 String r = rs.getString("receiver");
                 String m = rs.getString("message_text");  
                 
-                if ((sender.equals(s) && receiver.equals(r)) || (sender.equals(r) && receiver.equals(s))) {
-                    messageList.add(s + ": " + m);
-                }
-            }
-            
-            for (int i = 0; i < messageList.size(); i++) {
-            	
-                MHistory += messageList.get(i);
-                if (i < messageList.size() - 1) MHistory += "\n";
+                message = new Message(s, r, m);
+                
+                if ((sender.equals(s) && receiver.equals(r)) || (sender.equals(r) && receiver.equals(s))) 
+                    messageList.add(message);
                 
             }
+//            for (int i = 0; i < messageList.size(); i++) {
+//            	
+//                MHistory += messageList.get(i);
+//                if (i < messageList.size() - 1) MHistory += "\n";
+//                
+//            }
             
             conn.close();
             
@@ -151,7 +151,7 @@ public class DbConnection {
             e.printStackTrace();
         }
         
-        return MHistory;
+        return messageList;
     }
     
     public void save_message(String sender, String receiver, String message){

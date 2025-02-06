@@ -1,15 +1,16 @@
 package server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
-import client.User;
+import utils.ChatHistory;
 import utils.DbConnection;
+import utils.Message;
+import utils.OpenChatSessionRequest;
+import utils.User;
 
 public class ClientHandler extends Thread {
 	
@@ -21,37 +22,43 @@ public class ClientHandler extends Thread {
 	DbConnection db = new DbConnection();
 	boolean isAuthenticated = false;
 	
-	InputStreamReader isReader;
-	BufferedReader bReader;
-	PrintWriter pWriter;
 	ClientManager cManager;
+	Message message;
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
+	OpenChatSessionRequest openChatReq;
+	ChatHistory cHistory;
 	
 	ClientHandler(Socket socket, ClientManager cManager) {
 		
 		this.socket = socket;
 		this.cManager = cManager;
+		try {
+			
+			this.ois = new ObjectInputStream(socket.getInputStream());
+			this.oos = new ObjectOutputStream(socket.getOutputStream());
+			
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
 	}
 	
 	public void run() {
 		
-		try {
+		try {	
 			
-			
-			isReader = new InputStreamReader(socket.getInputStream());
-			bReader = new BufferedReader(isReader);
-			pWriter = new PrintWriter(socket.getOutputStream(), true);
-			
+//			ois = new ObjectInputStream(socket.getInputStream());
+//			oos = new ObjectOutputStream(socket.getOutputStream());
 			while (!isAuthenticated) {
-				
-				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+					
 				user = (User) ois.readObject();
 				username = user.getUsername();
 				password = user.getPassword();
 								
 //				db.run(user.username, user.password);
 				isAuthenticated = db.run(username, password);
-				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-				
+					
 				if (isAuthenticated) oos.writeObject("Login successful!");
 				
                 else {
@@ -61,72 +68,105 @@ public class ClientHandler extends Thread {
 //                	socket.close();
                 	
                     oos.writeObject("login failed");
-                    socket.close();
+//                    socket.close();	
                     System.out.println("Login failed. Socket closed.");
                 	
                 }
                 
 			}
 			
-			System.out.println(username + " Connected to server ");
+			System.out.println(username + " Connected to Server ");
 			cManager.addClient(username, this);
 			
-			cManager.addClientConnection(username, "");
+//			cManager.addClientConnection(username, "");
 			
-			String message;
+			Object receivedObject;
+			
+			while (true) {
+				
+				receivedObject = ois.readObject();
+				
+				if (receivedObject instanceof Message) {
+					
+					message = (Message) receivedObject;
+					
+//					cManager.broadcastMessages(message.getContent(), this);
+					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
+					else cManager.sendPrivateMessage(message);
+					
+					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
+				}
+				
+				if (receivedObject instanceof OpenChatSessionRequest) {
+					
+					openChatReq = (OpenChatSessionRequest) receivedObject;
+					String sender = openChatReq.getSender();
+					String receiver = openChatReq.getReceiver();
+					
+					cManager.addClientChatSession(sender, receiver);
+					List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
+					cHistory = new ChatHistory(oldMessages);
+					
+					oos.writeObject(cHistory);
+					oos.flush();
+					
+					
+				}
+			}	
 	
-			while ((message = bReader.readLine()) != null) {
-				
-                if (message.equals("close")) {
-                	
-                    System.out.println(username + " is disconnected");
-                    cManager.removeclient(username);
-                    break;
-                }
-                
-                if (message.startsWith("/msg")) {
-                    
-                    String[] parts = message.split(" ");
-                    String sendTo = parts[1];
-					pWriter.println("\033[H\033[2J"); // Clears the screen
-                	pWriter.flush();
-                    cManager.privateMessage(username, sendTo);
-					while ((message = bReader.readLine()) != null) {
-						cManager.addClientConnection(username, sendTo);
-						if (message.equals("/quit")) {
-							pWriter.println("\033[H\033[2J"); // Clears the screen
-                			pWriter.flush();
-							System.out.println(username + " quit private message with " + sendTo);
-							cManager.addClientConnection(username, "");
-							break;
-						}
-						
-						else cManager.sendprivateMessage(username, sendTo, message);
-						
-						System.out.println(username + ": " + message);
-		
-					}
-
-                } 
-
-                else cManager.broadcastMessages(message, this);
-				
-				System.out.println(username + ": " + message);
-
-			}
+//			while ((message = bReader.readLine()) != null) {
+//				
+//                if (message.equals("close")) {
+//                	
+//                    System.out.println(username + " is disconnected");
+//                    cManager.removeclient(username);
+//                    break;
+//                }
+//                
+//                if (message.startsWith("/msg")) {
+//                    
+//                    String[] parts = message.split(" ");
+//                    String sendTo = parts[1];
+//					pWriter.println("\033[H\033[2J"); 
+//                	pWriter.flush();
+//                    cManager.privateMessage(username, sendTo);
+//					while ((message = bReader.readLine()) != null) {
+//						cManager.addClientConnection(username, sendTo);
+//						if (message.equals("/quit")) {
+//							pWriter.println("\033[H\033[2J");
+//                			pWriter.flush();
+//							System.out.println(username + " quit private message with " + sendTo);
+//							cManager.addClientConnection(username, "");
+//							break;
+//						}
+//						
+//						else cManager.sendprivateMessage(username, sendTo, message);
+//						
+//						System.out.println(username + ": " + message);
+//		
+//					}
+//
+//                } 
+//
+//                else cManager.broadcastMessages(message, this);
+//				
+//				System.out.println(username + ": " + message);
+//
+//			}
 			
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 //			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-//			e.printStackTrace();
+			cManager.removeclient(username);
+			System.out.println(username + " is disconnected");
+			
 		} finally {
 			
 			try {
-				socket.close();
-				pWriter.close();
-				bReader.close();
+				
+				if (ois != null) ois.close();
+	            if (oos != null) oos.close();
+	            if (socket != null) socket.close();
 				
 			} catch (IOException e) {
 				
