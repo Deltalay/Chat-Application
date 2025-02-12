@@ -12,7 +12,7 @@ public class DbConnection {
 
     String url = "jdbc:mysql://localhost:3306/";
     String dbusername = "root";
-    String dbPassword = getDbPassword();
+    String dbPassword = "";
     
     private String username;
     private String password;
@@ -36,7 +36,7 @@ public class DbConnection {
     }
   
     
-    public boolean run(String InputName,String InputPassword) {
+    public boolean check_login(String InputName,String InputPassword) {
     	
         try {
         	
@@ -164,6 +164,56 @@ public class DbConnection {
             Statement stmt = conn.createStatement();
             
             String query = "INSERT INTO messages (username, receiver, message_text) VALUES ('" + sender + "', '" + receiver + "', '" + message + "');";
+            stmt.executeUpdate(query);
+            
+            conn.close();
+            
+        } catch(Exception e) {
+        	
+            e.printStackTrace();
+        }
+    }
+    public boolean check_user(String email, String username){
+        
+    	try {
+    		
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url + "users", dbusername, dbPassword);
+            Statement stmt = conn.createStatement();
+            
+            String query = "SELECT username, emailFROM users";
+            ResultSet rs = stmt.executeQuery(query);
+            rs = stmt.executeQuery(query);
+            
+            while (rs.next()) {
+            	
+                String s = rs.getString("username");
+                String m = rs.getString("email"); 
+                
+                if (!username.equals(s) || !email.equals(m)) {
+                    conn.close(); // Close connection before returning
+                    return false;
+                }
+            }
+            
+            conn.close();
+            
+        } catch(Exception e) {
+        	
+            e.printStackTrace();
+        }
+        return true;
+    }
+    public void save_user(String email, String username, String password){
+        
+    	try {
+    		
+            Class.forName("com.mysql.cj.jdbc.Driver");
+//            url = "jdbc:mysql://localhost:3306/chat";
+            Connection conn = DriverManager.getConnection(url + "users", dbusername, dbPassword);
+            Statement stmt = conn.createStatement();
+            
+            String query = "INSERT INTO messages (username, password, email) VALUES ('" + username + "', '" + password + "', '" + email + "');";
             stmt.executeUpdate(query);
             
             conn.close();

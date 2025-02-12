@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.Scanner;
 
 import utils.Message;
-import utils.OpenChatSessionRequest;
+import utils.ChatSessionRequest;
 import utils.User;
 
 public class Connection {
@@ -19,7 +19,7 @@ public class Connection {
 	InputStreamReader ireader;
 	User user;
 	Socket socket;
-	OpenChatSessionRequest openChatReq;
+	ChatSessionRequest openChatReq;
 	
 	Connection(String address, int port, User user) {
 		this.address = address;
@@ -101,7 +101,7 @@ public class Connection {
                     receiver = parts[1];
                     
                     System.out.println("========== Private Chat With " + receiver + " ==========\n");
-                    openChatReq = new OpenChatSessionRequest(user.getUsername(), receiver);
+                    openChatReq = new ChatSessionRequest(user.getUsername(), receiver);
                     
                     oos.writeObject(openChatReq);
                     oos.flush();
@@ -114,10 +114,24 @@ public class Connection {
 //			        pw.println("/msg " + receiver);
 //			        pw.flush();	
 		        }
-		        
+		        if (content.startsWith("/quit")) {
+		        	
+					System.out.print("\033[H\033[2J");
+					System.out.flush();
+					receiver="";
+                    
+					System.out.println("Exited private chat. Returning to public chat...");
+                    openChatReq = new ChatSessionRequest(user.getUsername());
+                    
+                    oos.writeObject(openChatReq);
+                    oos.flush();
+                    continue;
+//					message.setContent(message.getSender() + " is currently chatting with " + receiver);
+//			        pw.println("/msg " + receiver);
+//			        pw.flush();	
+		        }
 		        message = new Message(user.getUsername(), receiver, content);
 //		        message.setContent(content);
-		        
 		        oos.writeObject(message);
 				oos.flush();	        
  

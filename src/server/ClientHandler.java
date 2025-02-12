@@ -9,7 +9,7 @@ import java.util.List;
 import utils.ChatHistory;
 import utils.DbConnection;
 import utils.Message;
-import utils.OpenChatSessionRequest;
+import utils.ChatSessionRequest;
 import utils.User;
 
 public class ClientHandler extends Thread {
@@ -26,7 +26,7 @@ public class ClientHandler extends Thread {
 	Message message;
 	ObjectOutputStream oos;
 	ObjectInputStream ois;
-	OpenChatSessionRequest openChatReq;
+	ChatSessionRequest openChatReq;
 	ChatHistory cHistory;
 	
 	ClientHandler(Socket socket, ClientManager cManager) {
@@ -57,7 +57,7 @@ public class ClientHandler extends Thread {
 				password = user.getPassword();
 								
 //				db.run(user.username, user.password);
-				isAuthenticated = db.run(username, password);
+				isAuthenticated = db.check_login(username, password);
 					
 				if (isAuthenticated) oos.writeObject("Login successful!");
 				
@@ -92,23 +92,29 @@ public class ClientHandler extends Thread {
 					
 //					cManager.broadcastMessages(message.getContent(), this);
 					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
-					else cManager.sendPrivateMessage(message);
+					else {
+						cManager.sendPrivateMessage(message);
+						db.save_message(message.getSender(), message.getReceiver(), message.getContent());}
 					
 					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
+					
 				}
 				
-				if (receivedObject instanceof OpenChatSessionRequest) {
+				if (receivedObject instanceof ChatSessionRequest) {
 					
-					openChatReq = (OpenChatSessionRequest) receivedObject;
+					openChatReq = (ChatSessionRequest) receivedObject;
 					String sender = openChatReq.getSender();
-					String receiver = openChatReq.getReceiver();
+					String receiver;
+					if(openChatReq.getReceiver() == "") receiver="";
+					else {
+						receiver = openChatReq.getReceiver();
 					
-					cManager.addClientChatSession(sender, receiver);
 					List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
 					cHistory = new ChatHistory(oldMessages);
 					
 					oos.writeObject(cHistory);
-					oos.flush();
+					oos.flush();}
+					cManager.addClientChatSession(sender, receiver);
 					
 					
 				}
@@ -169,7 +175,12 @@ public class ClientHandler extends Thread {
 	            if (socket != null) socket.close();
 				
 			} catch (IOException e) {
-				
+				if (username != null) {
+        cManager.removeclient(username);
+        System.out.println(username + " is disconnected");
+    } else {
+        System.out.println("Client disconnected before authentication.");
+    }
 //				e.printStackTrace();
 			}
 			

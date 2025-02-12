@@ -6,7 +6,7 @@ import utils.User;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "192.168.100.38";
+	static String SERVER_ADDRESS = "172.23.0.85";
 	static int SERVER_PORT = 3001;
 	static boolean isConnected = false;
 	
@@ -16,13 +16,8 @@ public class ChatClient {
 //		System.out.println("Client");
 		System.out.println("Please Login");
 		while (!isConnected) {
-			System.out.println("What tf is ur name");
-			Scanner scanner = new Scanner(System.in);
-			String username = scanner.nextLine();
-			
-			System.out.println("What tf is ur password");
-			String password = scanner.nextLine();
-			User user = new User(username, password);
+			User user = new User();
+			user.login();
 			con = new Connection(SERVER_ADDRESS, SERVER_PORT, user);
 			con.login();
 			
