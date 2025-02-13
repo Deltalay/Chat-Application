@@ -12,9 +12,6 @@ import java.net.Socket;
 public class ChatServer {
 	
 	private static final int PORT = 3001;
-//	private static CopyOnWriteArrayList<Socket> clientSockets = new CopyOnWriteArrayList<>();
-//	private static ConcurrentMap<String, Socket> clientSockets = new ConcurrentHashMap<>();
-//	private static ConcurrentMap<String, ClientHandler> clientSockets = new ConcurrentHashMap<>();
 	
 	public static void main(String[] args) {
 		try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -26,6 +23,7 @@ public class ChatServer {
 				
 				Socket clientSocket = serverSocket.accept();
 				ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
+				System.out.println("Gi");
 				cHandler.start();
 			}
 

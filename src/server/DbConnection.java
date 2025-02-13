@@ -43,6 +43,7 @@ public class DbConnection {
         try {
         	
             Class.forName("com.mysql.cj.jdbc.Driver");
+            
             Connection conn = DriverManager.getConnection(url, dbusername, dbPassword);
             Statement stmt = conn.createStatement();
             
@@ -75,19 +76,19 @@ public class DbConnection {
             }
             
             
-            String query = "SELECT * FROM users";
-            rs = stmt.executeQuery(query);
+            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, InputName);
+            pstmt.setString(2, InputPassword);
             
-            while (rs.next()) {
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
             	
-                username = rs.getString("username");
-                password = rs.getString("password");  
-                
-                if (username.equals(InputName) && password.equals(InputPassword)) {
-                    conn.close(); // Close connection before returning
-                    return true;
-                }
+                conn.close();
+                return true;
             }
+            
             conn.close();
             
         } catch(Exception e) {

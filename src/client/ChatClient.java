@@ -12,14 +12,11 @@ public class ChatClient {
 	static boolean isConnected = false;
 	
 	public static void main(String[] args) throws IOException {
-		ClientConnection con = null;
 		
 //		System.out.println("Client");
 		
 		User user = new User();
-		con = new ClientConnection(SERVER_ADDRESS, SERVER_PORT, user);
-
-//		con.
+		new ClientConnection().connect(SERVER_ADDRESS, SERVER_PORT, user);;
 		
 	}
 }

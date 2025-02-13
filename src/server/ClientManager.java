@@ -56,9 +56,6 @@ public class ClientManager {
 		
 		String sender = message.getSender();
 		String receiver = message.getReceiver();
-		String messageContent = message.getContent();
-		
-//		db.save_message(sendFrom, sendTo, message);
 		
 		try {
 			clientSockets.get(sender).oos.writeObject(message);	
@@ -76,7 +73,7 @@ public class ClientManager {
 	
 	public boolean isReceiverChatSessionOpen(String sender, String receiver) {
 		
-		return clientSockets.containsKey(receiver) && chatSessions.get(receiver).equals(sender);
-    }
-	
+		String session = chatSessions.get(receiver);
+	    return clientSockets.containsKey(receiver) && session != null && session.equals(sender);
+	}
 }

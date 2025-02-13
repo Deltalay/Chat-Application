@@ -14,25 +14,21 @@ import utils.User;
 
 public class ClientConnection implements Connection {
 	
-	private String address;
-	private int port;
+//	private String address;
+//	private int port;
 	boolean loginIn;
 	InputStreamReader ireader;
 	User user;
 	Socket socket;
 	ChatSessionRequest openChatReq;
+	ObjectInputStream ois;
+	ObjectOutputStream oos;
 	
-	ClientConnection(String address, int port, User user) throws IOException {
-		this.address = address;
-		this.port = port;
-		this.user = user;
-		connect(address, port, user);
+	ClientConnection() throws IOException {
+
 	}
 	
-
-	@Override
 	public void connect(String address, int port, User user) throws UnknownHostException, IOException {
-		// TODO Auto-generated method stub
 		
 		socket = new Socket(address, port);
         System.out.println("Connected to server at " + address + ":" + port);
@@ -45,7 +41,6 @@ public class ClientConnection implements Connection {
         		
         		authenticate(user, ois, oos);
         	} catch (Exception e) {
-        		
         		
         	}
         } while (!ChatClient.isConnected);
@@ -76,7 +71,6 @@ public class ClientConnection implements Connection {
   
   		if (response.equals("login failed")) {
   		
-            socket.close();
             System.out.println("Please Login again");
       	}
   		
@@ -136,8 +130,7 @@ public class ClientConnection implements Connection {
             }
 
             message = new Message(user.getUsername(), receiver, content);
-            oos.writeObject(message);
-            oos.flush();
+            sendMessage(message, oos);
         }
 	}
 
@@ -149,6 +142,20 @@ public class ClientConnection implements Connection {
             socket.close();
             System.out.println("Disconnected from server.");
         }
+	}
+
+	@Override
+	public void sendMessage(Object message, ObjectOutputStream oos) throws IOException {
+		// TODO Auto-generated method stub
+		
+		oos.writeObject(message);
+        oos.flush();
+	}
+
+	@Override
+	public Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
