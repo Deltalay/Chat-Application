@@ -1,4 +1,4 @@
-package utils;
+package server;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,12 +7,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import utils.Message;
+
 
 public class DbConnection {
 
     String url = "jdbc:mysql://localhost:3306/";
     String dbusername = "root";
-    String dbPassword = "";
+    String dbPassword = getDbPassword();
     
     private String username;
     private String password;

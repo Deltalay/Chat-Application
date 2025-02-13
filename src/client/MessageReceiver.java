@@ -27,7 +27,7 @@ public class MessageReceiver implements Runnable {
 		
 		try {
 			
-			String line;
+			String line; 
 			while (true) {
 				
 				receivedObject = ois.readObject();

@@ -3,13 +3,13 @@ package utils;
 import java.io.Serializable;
 import java.util.Scanner;
 
-public class User implements Serializable,Authentication {
+public class User implements Serializable, Authentication {
     private static final long serialVersionUID = 1L;
     private String username;
     private String password;
     private String email;
 
-    private transient Scanner scanner=new Scanner(System.in);
+    private transient Scanner scanner = new Scanner(System.in);
     public User() {
 
     }
@@ -27,16 +27,17 @@ public class User implements Serializable,Authentication {
     }
     
     public void setUsername(String username) {
-        this.username=username;
+        this.username = username;
     }
 
     public void setPassword(String password){
-        this.password=password;
+        this.password = password;
     }
     
     public void setEmail(String email) {
-        this.email=email;
+        this.email = email;
     }
+    
     @Override
     public void login() {
         System.out.println("What is your name?");
@@ -44,14 +45,19 @@ public class User implements Serializable,Authentication {
         System.out.println("What is your password?");
         password = scanner.nextLine();
     };
+    
     @Override
-    public void register(){
+    public void register() {
+    	
         System.out.print("Enter your email: ");
         email = scanner.nextLine();
+        
         System.out.print("Choose a username: ");
         username = scanner.nextLine();
+        
         System.out.print("Choose a password: ");
         password = scanner.nextLine();
+        
         System.out.println("Registration successful! please log in again");
         
     };

@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.util.List;
 
 import utils.ChatHistory;
-import utils.DbConnection;
 import utils.Message;
 import utils.ChatSessionRequest;
 import utils.User;
