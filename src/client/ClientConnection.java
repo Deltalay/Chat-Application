@@ -61,6 +61,8 @@ public class ClientConnection implements Connection {
 		// TODO Auto-generated method stub
 		Scanner scanner = new Scanner(System.in);
 
+		System.out.println("Please Login");
+		
 		System.out.print("Enter username: ");
 		user.setUsername(scanner.nextLine());
 		

@@ -12,18 +12,13 @@ public class ChatClient {
 	static boolean isConnected = false;
 	
 	public static void main(String[] args) throws IOException {
-		Scanner scanner = new Scanner(System.in);
 		ClientConnection con = null;
 		
 //		System.out.println("Client");
-		System.out.println("Please Login");
-		while (!isConnected) {
-			User user = new User();
+		
+		User user = new User();
+		con = new ClientConnection(SERVER_ADDRESS, SERVER_PORT, user);
 
-			
-			con = new ClientConnection(SERVER_ADDRESS, SERVER_PORT, user);
-			
-		}
 //		con.
 		
 	}
