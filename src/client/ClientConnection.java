@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 import utils.Message;
 import utils.ChatSessionRequest;
+import utils.Connection;
 import utils.User;
 
 public class ClientConnection implements Connection {
@@ -24,45 +25,47 @@ public class ClientConnection implements Connection {
 	ObjectInputStream ois;
 	ObjectOutputStream oos;
 	
-	ClientConnection() throws IOException {
-
+	ClientConnection(String address, int port) throws IOException {
+		this.socket = new Socket(address, port);
+		this.oos = new ObjectOutputStream(socket.getOutputStream());
+        this.ois = new ObjectInputStream(socket.getInputStream());
 	}
 	
-	public void connect(String address, int port, User user) throws UnknownHostException, IOException {
+	public void connect() throws UnknownHostException, IOException {
 		
-		socket = new Socket(address, port);
-        System.out.println("Connected to server at " + address + ":" + port);
+//		socket = new Socket(address, port);
+//        System.out.println("Connected to server at " + address + ":" + port);
         
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+//        this.oos = new ObjectOutputStream(socket.getOutputStream());
+//        this.ois = new ObjectInputStream(socket.getInputStream());
         
         do {
         	try {
         		
-        		authenticate(user, ois, oos);
+        		authenticate(user);
         	} catch (Exception e) {
         		
         	}
-        } while (!ChatClient.isConnected);
+        } while (!ChatClient.isAuthenticated);
         
-        startCommunication(oos, ois);
+        startCommunication(user, oos, ois);
         
 	}
 
 
 
 	@Override
-	public void authenticate(User user, ObjectInputStream ois, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
+	public void authenticate(User user) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		Scanner scanner = new Scanner(System.in);
-
-		System.out.println("Please Login");
-		
-		System.out.print("Enter username: ");
-		user.setUsername(scanner.nextLine());
-		
-		System.out.print("Enter password: ");
-		user.setPassword(scanner.nextLine());
+//		Scanner scanner = new Scanner(System.in);
+//
+//		System.out.println("Please Login");
+//		
+//		System.out.print("Enter username: ");
+//		user.setUsername(scanner.nextLine());
+//		
+//		System.out.print("Enter password: ");
+//		user.setPassword(scanner.nextLine());
 		
 		oos.writeObject(user);
 		oos.flush();
@@ -77,19 +80,19 @@ public class ClientConnection implements Connection {
 		else {
 			System.out.println("\033[H\033[2J");
 			System.out.println(response);
-			ChatClient.isConnected = true;
+			ChatClient.isAuthenticated = true;
 			
-			startCommunication(oos, ois);
+			startCommunication(user, oos, ois);
 		}
 	}
 
-	public void startCommunication(ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
+	public void startCommunication(User user, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
 		// TODO Auto-generated method stub
 		
 		Scanner scanner = new Scanner(System.in);
 
         // Start the message receiver thread
-        new Thread(new MessageReceiver(ois)).start();
+        new Thread(new MessageReceiver(this.ois)).start();
 
         String content;
         String receiver = "";

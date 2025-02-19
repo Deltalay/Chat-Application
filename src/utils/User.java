@@ -10,8 +10,10 @@ public class User implements Serializable {
     private String email;
 
     private transient Scanner scanner = new Scanner(System.in);
-    public User() {
-
+    
+    public User(String username, String password) {
+    	this.username = username;
+    	this.password = password;
     }
     
     public String getUsername() {

@@ -14,6 +14,7 @@ public class ChatServer {
 	private static final int PORT = 3001;
 	
 	public static void main(String[] args) {
+		
 		try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 			System.out.println("Server Started!");
 			
@@ -23,7 +24,6 @@ public class ChatServer {
 				
 				Socket clientSocket = serverSocket.accept();
 				ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
-				System.out.println("Gi");
 				cHandler.start();
 			}
 

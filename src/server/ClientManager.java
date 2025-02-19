@@ -23,6 +23,7 @@ public class ClientManager {
 		
 		clientSockets.remove(username);
 	}
+	
 	public void addClientChatSession(String sender, String receiver) {
 		
 		chatSessions.put(sender, receiver);
@@ -35,8 +36,8 @@ public class ClientManager {
 			
 			try {
 				
-				entry.getValue().oos.writeObject(message);
-				
+				entry.getValue().sendMessage(message, entry.getValue().oos);
+			
 			} catch (IOException e) {
 				
 				// TODO Auto-generated catch block
@@ -58,10 +59,10 @@ public class ClientManager {
 		String receiver = message.getReceiver();
 		
 		try {
-			clientSockets.get(sender).oos.writeObject(message);	
+			clientSockets.get(sender).sendMessage(message, clientSockets.get(sender).oos);	
 		
 			if (isReceiverChatSessionOpen(sender, receiver)) 
-					clientSockets.get(receiver).oos.writeObject(message);
+				clientSockets.get(receiver).sendMessage(message, clientSockets.get(receiver).oos);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
