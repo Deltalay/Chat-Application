@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.util.Scanner;
 
 import utils.User;
+import utils.NewUser;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "172.23.0.219";
+	static String SERVER_ADDRESS = "172.23.1.209";
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 	
@@ -21,12 +22,13 @@ public class ChatClient {
 			String choice = scanner.nextLine();
 			if (choice.startsWith("/login")) {
 				
-				User user = new User("Jam", "12345678");
+				User user = new User();
 				cc.authenticate(user);
 			} else if (choice.startsWith("/register")) {
-				
+				NewUser newUser = new NewUser();
+				cc.Register(newUser);
 			} else {
-				
+				System.out.println("dak command ort trv dak mdong tt");
 			}
 			
 		} while (!isAuthenticated);

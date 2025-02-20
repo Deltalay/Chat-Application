@@ -11,13 +11,17 @@ import utils.Message;
 import utils.ChatSessionRequest;
 import utils.Connection;
 import utils.User;
+import utils.NewUser;
 
 public class ClientHandler extends Thread implements Connection {
 	
 	public Socket socket;
 	public String username;
 	String password;
+	String dob;
+	String email;
 	User user;
+	NewUser newuser;
 	
 	DbConnection db = new DbConnection();
 	boolean isAuthenticated = false;
@@ -38,11 +42,25 @@ public class ClientHandler extends Thread implements Connection {
 		
 	}
 	
+	@Override 
+	public void Register(NewUser newuser) throws IOException, ClassNotFoundException{
+		username = newuser.getUsername();
+		email = newuser.getEmail();
+		dob = newuser.getDob();
+		password = newuser.getPassword();
+		boolean userExists = db.check_user(email, username);
+		if (!userExists) { 
+			db.save_user(dob, email, username, password);
+			oos.writeObject("Account created successfully! Welcome, " + username + "!");
+			System.out.println(username + " has registered successfully.");
+		} else {
+			oos.writeObject("Account create failed!");
+			System.out.println(username + " registration failed (User already exists).");
+		}
+
+	}
 	@Override
 	public void authenticate(User user) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		
-		user = (User) ois.readObject();
 		
 		username = user.getUsername();
 		password = user.getPassword();
@@ -75,53 +93,52 @@ public class ClientHandler extends Thread implements Connection {
 	
 	public void run() {
 		
-		try {			
-			
-			while (!isAuthenticated) 
-				authenticate(user);
-			
-			System.out.println(username + " Connected to Server ");
-			cManager.addClient(username, this);
-			
-			Object receivedObject;
-			
-			while (true) {
+		try {
+				Object receivedObject = receiveMessage(ois);
+				if (receivedObject instanceof NewUser) {
+					System.out.println("New registration request received.");
+					Register((NewUser) receivedObject);
+					cManager.addClient(username, this);
+				} else if (receivedObject instanceof User) {
+					System.out.println("Authentication request received.");
+					authenticate((User) receivedObject);
+					cManager.addClient(username, this);
+				}while (true) {
 				
-				receivedObject = receiveMessage(ois);
-				
-				if (receivedObject instanceof Message) {
+					receivedObject = receiveMessage(ois);
 					
-					message = (Message) receivedObject;
-					
-					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
-					else {
-						cManager.sendPrivateMessage(message);
-						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
+					if (receivedObject instanceof Message) {
+						
+						message = (Message) receivedObject;
+						
+						if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
+						else {
+							cManager.sendPrivateMessage(message);
+							db.save_message(message.getSender(), message.getReceiver(), message.getContent());
+						}
+						
+						System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
+						
 					}
 					
-					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
-					
-				}
-				
-				if (receivedObject instanceof ChatSessionRequest) {
-					
-					openChatReq = (ChatSessionRequest) receivedObject;
-					String sender = openChatReq.getSender();
-					String receiver;
-					if(openChatReq.getReceiver() == "") receiver="";
-					else {
-						receiver = openChatReq.getReceiver();
-					
-					List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
-					cHistory = new ChatHistory(oldMessages);
-					
-			        sendMessage(cHistory, oos);
-				}
-				
-				cManager.addClientChatSession(sender, receiver);	
+					if (receivedObject instanceof ChatSessionRequest) {
+						
+						openChatReq = (ChatSessionRequest) receivedObject;
+						String sender = openChatReq.getSender();
+						String receiver;
+						if(openChatReq.getReceiver() == "") receiver="";
+						else {
+							receiver = openChatReq.getReceiver();
+						
+						List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
+						cHistory = new ChatHistory(oldMessages);
+						
+						sendMessage(cHistory, oos);
+					}
 	
+					cManager.addClientChatSession(sender, receiver);
 				}
-			}	
+			}
 			
 		} catch (IOException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block

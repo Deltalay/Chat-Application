@@ -12,6 +12,7 @@ import utils.Message;
 import utils.ChatSessionRequest;
 import utils.Connection;
 import utils.User;
+import utils.NewUser;
 
 public class ClientConnection implements Connection {
 	
@@ -52,20 +53,28 @@ public class ClientConnection implements Connection {
         
 	}
 
+	@Override
+		public void Register(NewUser newuser) throws IOException, ClassNotFoundException{
+			System.out.println("Sending registration request...");
+			oos.writeObject(newuser);
+			oos.flush();
+			System.out.println("Waiting for server response...");	
 
+			String response = (String) ois.readObject();
+			if (response.equals("Account create failed!")) {
+  		
+				System.out.println("Account create failed! Please try again");
+			}
+			else {
+				System.out.println("\033[H\033[2J");
+				System.out.println(response);
+				ChatClient.isAuthenticated = true;
+				startCommunication(user, oos, ois);
+			}
+		}
 
 	@Override
 	public void authenticate(User user) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-//		Scanner scanner = new Scanner(System.in);
-//
-//		System.out.println("Please Login");
-//		
-//		System.out.print("Enter username: ");
-//		user.setUsername(scanner.nextLine());
-//		
-//		System.out.print("Enter password: ");
-//		user.setPassword(scanner.nextLine());
 		
 		oos.writeObject(user);
 		oos.flush();

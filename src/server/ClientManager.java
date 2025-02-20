@@ -56,7 +56,7 @@ public class ClientManager {
 	public void sendPrivateMessage(Message message) {
 		
 		String sender = message.getSender();
-		String receiver = message.getReceiver();
+		String receiver = message.getReceiver();	
 		
 		try {
 			clientSockets.get(sender).sendMessage(message, clientSockets.get(sender).oos);	

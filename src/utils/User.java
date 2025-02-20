@@ -11,9 +11,15 @@ public class User implements Serializable {
 
     private transient Scanner scanner = new Scanner(System.in);
     
-    public User(String username, String password) {
-    	this.username = username;
-    	this.password = password;
+    public User() {
+    	Scanner scanner = new Scanner(System.in);
+		System.out.println("Please Login");
+		
+		System.out.print("Enter username: ");
+		this.username=scanner.nextLine();
+		
+		System.out.print("Enter password: ");
+		this.password=scanner.nextLine();
     }
     
     public String getUsername() {
