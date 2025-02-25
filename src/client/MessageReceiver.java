@@ -13,10 +13,12 @@ public class MessageReceiver implements Runnable {
 	ObjectInputStream ois;
 	Message message;
 	ChatHistory cHistory;
+	ClientConnection cConnection;
 
-	public MessageReceiver(ObjectInputStream ois) {
+	public MessageReceiver(ObjectInputStream ois, ClientConnection cConnection) {
 //		this.socket = socket;
 		this.ois = ois;
+		this.cConnection = cConnection;
 	}
 	
 	@Override
@@ -30,7 +32,7 @@ public class MessageReceiver implements Runnable {
 			String line; 
 			while (true) {
 				
-				receivedObject = ois.readObject();
+				receivedObject = cConnection.receiveMessage(ois);
 				
 				if (receivedObject instanceof Message) {
 					
@@ -63,6 +65,7 @@ public class MessageReceiver implements Runnable {
 			
 //			System.out.println("Error receiving message from server");
 		} catch (ClassNotFoundException e) {
+			
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

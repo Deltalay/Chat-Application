@@ -17,11 +17,11 @@ public class ClientHandler extends Thread implements Connection {
 	
 	public Socket socket;
 	public String username;
-	String password;
-	String dob;
-	String email;
-	User user;
-	NewUser newuser;
+	public String password;
+	public String dob;
+	public String email;
+	public User user;
+	public NewUser newuser;
 	
 	DbConnection db = new DbConnection();
 	boolean isAuthenticated = false;
@@ -31,7 +31,7 @@ public class ClientHandler extends Thread implements Connection {
 	ObjectOutputStream oos;
 	ObjectInputStream ois;
 	ChatSessionRequest openChatReq;
-	ChatHistory cHistory;
+	public ChatHistory cHistory;
 	
 	ClientHandler(Socket socket, ClientManager cManager) throws IOException {
 		
@@ -43,22 +43,27 @@ public class ClientHandler extends Thread implements Connection {
 	}
 	
 	@Override 
-	public void Register(NewUser newuser) throws IOException, ClassNotFoundException{
+	public void register(NewUser newuser) throws IOException, ClassNotFoundException {
+		
 		username = newuser.getUsername();
 		email = newuser.getEmail();
 		dob = newuser.getDob();
 		password = newuser.getPassword();
+		
 		boolean userExists = db.check_user(email, username);
+		
 		if (!userExists) { 
 			db.save_user(dob, email, username, password);
 			oos.writeObject("Account created successfully! Welcome, " + username + "!");
 			System.out.println(username + " has registered successfully.");
 		} else {
+			
 			oos.writeObject("Account create failed!");
 			System.out.println(username + " registration failed (User already exists).");
 		}
 
 	}
+	
 	@Override
 	public void authenticate(User user) throws IOException, ClassNotFoundException {
 		
@@ -94,41 +99,44 @@ public class ClientHandler extends Thread implements Connection {
 	public void run() {
 		
 		try {
-				Object receivedObject = receiveMessage(ois);
-				if (receivedObject instanceof NewUser) {
-					System.out.println("New registration request received.");
-					Register((NewUser) receivedObject);
-					cManager.addClient(username, this);
-				} else if (receivedObject instanceof User) {
-					System.out.println("Authentication request received.");
-					authenticate((User) receivedObject);
-					cManager.addClient(username, this);
-				}while (true) {
+			Object receivedObject = receiveMessage(ois);
+			
+			if (receivedObject instanceof NewUser) {
+				System.out.println("New registration request received.");
+				Register((NewUser) receivedObject);
+				cManager.addClient(username, this);
 				
-					receivedObject = receiveMessage(ois);
+			} else if (receivedObject instanceof User) {
+				System.out.println("Authentication request received.");
+				authenticate((User) receivedObject);
+				cManager.addClient(username, this);
+				
+			} while (true) {
+				
+				receivedObject = receiveMessage(ois);
 					
-					if (receivedObject instanceof Message) {
+				if (receivedObject instanceof Message) {
 						
-						message = (Message) receivedObject;
+					message = (Message) receivedObject;
 						
-						if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
-						else {
-							cManager.sendPrivateMessage(message);
-							db.save_message(message.getSender(), message.getReceiver(), message.getContent());
-						}
-						
-						System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
-						
+					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
+					else {
+						cManager.sendPrivateMessage(message);
+						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
 					}
-					
-					if (receivedObject instanceof ChatSessionRequest) {
 						
-						openChatReq = (ChatSessionRequest) receivedObject;
-						String sender = openChatReq.getSender();
-						String receiver;
-						if(openChatReq.getReceiver() == "") receiver="";
-						else {
-							receiver = openChatReq.getReceiver();
+					System.out.println( );
+					
+				}
+					
+				if (receivedObject instanceof ChatSessionRequest) {
+						
+					openChatReq = (ChatSessionRequest) receivedObject;
+					String sender = openChatReq.getSender();
+					String receiver;
+					if(openChatReq.getReceiver() == "") receiver="";
+					else {
+						receiver = openChatReq.getReceiver();
 						
 						List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
 						cHistory = new ChatHistory(oldMessages);

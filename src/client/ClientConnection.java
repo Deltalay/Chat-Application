@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
+//import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import utils.Message;
@@ -16,8 +16,6 @@ import utils.NewUser;
 
 public class ClientConnection implements Connection {
 	
-//	private String address;
-//	private int port;
 	boolean loginIn;
 	InputStreamReader ireader;
 	User user;
@@ -31,47 +29,26 @@ public class ClientConnection implements Connection {
 		this.oos = new ObjectOutputStream(socket.getOutputStream());
         this.ois = new ObjectInputStream(socket.getInputStream());
 	}
-	
-	public void connect() throws UnknownHostException, IOException {
-		
-//		socket = new Socket(address, port);
-//        System.out.println("Connected to server at " + address + ":" + port);
-        
-//        this.oos = new ObjectOutputStream(socket.getOutputStream());
-//        this.ois = new ObjectInputStream(socket.getInputStream());
-        
-        do {
-        	try {
-        		
-        		authenticate(user);
-        	} catch (Exception e) {
-        		
-        	}
-        } while (!ChatClient.isAuthenticated);
-        
-        startCommunication(user, oos, ois);
-        
-	}
 
 	@Override
-		public void Register(NewUser newuser) throws IOException, ClassNotFoundException{
-			System.out.println("Sending registration request...");
-			oos.writeObject(newuser);
-			oos.flush();
-			System.out.println("Waiting for server response...");	
+	public void register(NewUser newuser) throws IOException, ClassNotFoundException{
+		System.out.println("Sending registration request...");
+		oos.writeObject(newuser);
+		oos.flush();
+		System.out.println("Waiting for server response...");	
 
-			String response = (String) ois.readObject();
-			if (response.equals("Account create failed!")) {
+		String response = (String) ois.readObject();
+		if (response.equals("Account create failed!")) {
   		
-				System.out.println("Account create failed! Please try again");
-			}
-			else {
-				System.out.println("\033[H\033[2J");
-				System.out.println(response);
-				ChatClient.isAuthenticated = true;
-				startCommunication(user, oos, ois);
-			}
+			System.out.println("Account create failed! Please try again");
 		}
+		else {
+			System.out.println("\033[H\033[2J");
+			System.out.println(response);
+			ChatClient.isAuthenticated = true;
+			startCommunication(newuser, oos, ois);
+		}
+	}
 
 	@Override
 	public void authenticate(User user) throws IOException, ClassNotFoundException {
@@ -101,7 +78,7 @@ public class ClientConnection implements Connection {
 		Scanner scanner = new Scanner(System.in);
 
         // Start the message receiver thread
-        new Thread(new MessageReceiver(this.ois)).start();
+        new Thread(new MessageReceiver(this.ois, this)).start();
 
         String content;
         String receiver = "";
@@ -167,7 +144,7 @@ public class ClientConnection implements Connection {
 	@Override
 	public Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		return null;
+		return ois.readObject();
 	}
 
 }
