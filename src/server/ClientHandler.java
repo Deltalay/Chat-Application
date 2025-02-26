@@ -103,7 +103,7 @@ public class ClientHandler extends Thread implements Connection {
 			
 			if (receivedObject instanceof NewUser) {
 				System.out.println("New registration request received.");
-				Register((NewUser) receivedObject);
+				register((NewUser) receivedObject);
 				cManager.addClient(username, this);
 				
 			} else if (receivedObject instanceof User) {

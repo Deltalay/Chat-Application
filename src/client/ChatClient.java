@@ -8,7 +8,7 @@ import utils.NewUser;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "172.23.1.209";
+	static String SERVER_ADDRESS = "172.23.0.170";
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 	
@@ -26,7 +26,7 @@ public class ChatClient {
 				cc.authenticate(user);
 			} else if (choice.startsWith("/register")) {
 				NewUser newUser = new NewUser();
-				cc.Register(newUser);
+				cc.register(newUser);
 			} else {
 				System.out.println("dak command ort trv dak mdong tt");
 			}

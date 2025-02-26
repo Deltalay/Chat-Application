@@ -5,12 +5,14 @@ import java.util.Scanner;
 
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String username;
-    private String password;
+    protected String username;
+    protected String password;
     private String email;
 
-    private transient Scanner scanner = new Scanner(System.in);
-    
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
     public User() {
     	Scanner scanner = new Scanner(System.in);
 		System.out.println("Please Login");
