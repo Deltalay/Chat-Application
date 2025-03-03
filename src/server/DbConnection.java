@@ -12,10 +12,10 @@ import utils.Message;
 
 public class DbConnection {
 
-    String url = "jdbc:mysql://localhost:3306/";
-    String dbusername = "root";
-    String dbPassword = getDbPassword();
-    
+    private String url = "jdbc:mysql://localhost:3306/";
+    private String dbusername = "root";
+    private String dbPassword = getDbPassword();
+
     private String username;
     private String password;
     private String dob;
@@ -26,22 +26,23 @@ public class DbConnection {
 
     	String readPassword = "";
     	
-    	// try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
+    	 try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
     		
-        //     readPassword = br.readLine();
+             readPassword = br.readLine();
             
-        // } catch (IOException e) {
+         } catch (IOException e) {
         	
-        //     e.printStackTrace();  
-        // }
+             e.printStackTrace();  
+         }
     	
-    	return "";
+    	return readPassword;
     }
   
     
     public DbConnection() {
         initializeDatabase();
     } 
+    
     public void initializeDatabase() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -77,6 +78,7 @@ public class DbConnection {
                 stmt.execute(createTableQuery);
                 System.out.println("Created 'users' table.");
             }
+            
             checkTableQuery = "SHOW TABLES LIKE 'messages'";
             rs = stmt.executeQuery(checkTableQuery);
             
@@ -94,9 +96,11 @@ public class DbConnection {
     
             conn.close();
         } catch (Exception e) {
+        	
             e.printStackTrace();
         }
     }   
+    
     public boolean check_login(String InputName,String InputPassword) {
     	
         try {

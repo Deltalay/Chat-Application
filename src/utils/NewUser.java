@@ -3,7 +3,7 @@ package utils;
 import java.io.Serializable;
 import java.util.Scanner;
 
-public class NewUser extends User{
+public class NewUser extends User {
     private String dob;
     private String email;
     private static final long serialVersionUID = 1L;
@@ -14,17 +14,18 @@ public class NewUser extends User{
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("Please Fill the information");
 		
-		System.out.print("Enter username: ");
-		this.username=scanner.nextLine();
-		
 		while (true) {
+			
+			System.out.print("Enter username: ");
+			this.username = scanner.nextLine();
+			
             System.out.print("Enter password (min 8 characters): ");
             this.password = scanner.nextLine();
 
             try {
-                validate(password);
+                validate(username, password);
                 break; // Exit loop if password is valid
-            } catch (InvalidPasswordException e) {
+            } catch (InvalidCredentialException e) {
                 System.out.println("Error: " + e.getMessage());
                 System.out.println("Please try again.");
             }
@@ -54,10 +55,16 @@ public class NewUser extends User{
         this.email = email;
     }
     
-    public static void validate(String password) throws InvalidPasswordException {
-        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
-            throw new InvalidPasswordException("Password must be at least " + MIN_PASSWORD_LENGTH + " characters long.");
+    public static void validate(String username, String password) throws InvalidCredentialException {
+    	
+        if (password.isBlank() || username.isBlank()) {
+        	throw new InvalidCredentialException("User credential musn't be empty");
         }
+        
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            throw new InvalidCredentialException("Password must be at least " + MIN_PASSWORD_LENGTH + " characters long.");
+        }
+      
     }
 	
 

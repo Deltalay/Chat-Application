@@ -14,14 +14,21 @@ public class User implements Serializable {
         this.password = password;
     }
     public User() {
-    	Scanner scanner = new Scanner(System.in);
-		System.out.println("Please Login");
-		
-		System.out.print("Enter username: ");
-		this.username=scanner.nextLine();
-		
-		System.out.print("Enter password: ");
-		this.password=scanner.nextLine();
+    	
+    	while (true) {
+	    	Scanner scanner = new Scanner(System.in);
+			System.out.println("Please Login");
+			
+			System.out.print("Enter username: ");
+			this.username = scanner.nextLine();
+			
+			System.out.print("Enter password: ");
+			this.password = scanner.nextLine();
+			
+			if (this.username.isBlank() || this.password.isBlank()) 
+				System.out.println("Credential musn't be empty. Please try again");
+			else break;
+    	}
     }
     
     public String getUsername() {

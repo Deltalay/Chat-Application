@@ -23,7 +23,9 @@ public class ChatServer {
 			while (true) {
 				
 				Socket clientSocket = serverSocket.accept();
+				System.out.println("Hi1");
 				ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
+				System.out.println("Hi2");
 				cHandler.start();
 			}
 

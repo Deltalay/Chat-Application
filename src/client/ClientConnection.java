@@ -75,6 +75,7 @@ public class ClientConnection implements Connection {
 	public void startCommunication(User user, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
 		// TODO Auto-generated method stub
 		
+		System.out.println("Type '/msg <Username>' to message someone");
 		Scanner scanner = new Scanner(System.in);
 
         // Start the message receiver thread
@@ -111,7 +112,8 @@ public class ClientConnection implements Connection {
                 System.out.flush();
 
                 receiver = "";
-                System.out.println("Exited private chat. Returning to public chat...");
+                System.out.println("Exited private chat");
+        		System.out.println("Type '/msg <Username>' to message someone");
                 ChatSessionRequest openChatReq = new ChatSessionRequest(user.getUsername());
                 oos.writeObject(openChatReq);
                 oos.flush();

@@ -11,6 +11,7 @@ import utils.Message;
 import utils.ChatSessionRequest;
 import utils.Connection;
 import utils.User;
+import utils.UserObjectInputStream;
 import utils.NewUser;
 
 public class ClientHandler extends Thread implements Connection {
@@ -31,14 +32,21 @@ public class ClientHandler extends Thread implements Connection {
 	ObjectOutputStream oos;
 	ObjectInputStream ois;
 	ChatSessionRequest openChatReq;
-	public ChatHistory cHistory;
+	ChatHistory cHistory;
+	
+	UserObjectInputStream uois;
 	
 	ClientHandler(Socket socket, ClientManager cManager) throws IOException {
 		
 		this.socket = socket;
 		this.cManager = cManager;
-		this.ois = new ObjectInputStream(socket.getInputStream());
+//		this.ois = new ObjectInputStream(socket.getInputStream());
 		this.oos = new ObjectOutputStream(socket.getOutputStream());
+		
+		this.ois = new UserObjectInputStream(socket.getInputStream());
+		
+//		this.uois = (UserObjectInputStream) new ObjectInputStream(socket.getInputStream());
+//		this.uois = new UserObjectInputStream(socket.getInputStream());
 		
 	}
 	
@@ -99,7 +107,7 @@ public class ClientHandler extends Thread implements Connection {
 	public void run() {
 		
 		try {
-			Object receivedObject = receiveMessage(ois);
+			Object receivedObject = ((UserObjectInputStream) ois).readUserObject();
 			
 			if (receivedObject instanceof NewUser) {
 				System.out.println("New registration request received.");
@@ -111,7 +119,9 @@ public class ClientHandler extends Thread implements Connection {
 				authenticate((User) receivedObject);
 				cManager.addClient(username, this);
 				
-			} while (true) {
+			} 
+			
+			while (true) {
 				
 				receivedObject = receiveMessage(ois);
 					
@@ -125,7 +135,7 @@ public class ClientHandler extends Thread implements Connection {
 						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
 					}
 						
-					System.out.println( );
+//					System.out.println( );
 					
 				}
 					
