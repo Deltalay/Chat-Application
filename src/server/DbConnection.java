@@ -26,16 +26,16 @@ public class DbConnection {
 
     	String readPassword = "";
     	
-    	 try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
+    	//  try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
     		
-             readPassword = br.readLine();
+        //      readPassword = br.readLine();
             
-         } catch (IOException e) {
+        //  } catch (IOException e) {
         	
-             e.printStackTrace();  
-         }
+        //      e.printStackTrace();  
+        //  }
     	
-    	return readPassword;
+    	return "";
     }
   
     

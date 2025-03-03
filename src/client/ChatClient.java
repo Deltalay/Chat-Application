@@ -8,7 +8,7 @@ import utils.NewUser;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "172.23.1.122";
+	static String SERVER_ADDRESS = "172.23.2.74";
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 	
@@ -36,6 +36,7 @@ public class ChatClient {
 			}
 			
 		} while (!isAuthenticated);
+		scanner.close();
 		
 	}
 }

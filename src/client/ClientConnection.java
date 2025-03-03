@@ -72,7 +72,7 @@ public class ClientConnection implements Connection {
 		}
 	}
 
-	public void startCommunication(User user, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
+	public void startCommunication(NewUser user, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
 		// TODO Auto-generated method stub
 		
 		System.out.println("Type '/msg <Username>' to message someone");

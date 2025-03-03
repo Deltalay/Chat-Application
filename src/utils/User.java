@@ -1,59 +1,43 @@
 package utils;
 
-import java.io.Serializable;
 import java.util.Scanner;
 
-public class User implements Serializable {
+public class User  extends NewUser  {
     private static final long serialVersionUID = 1L;
-    protected String username;
-    protected String password;
-    private String email;
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
     public User() {
-    	
-    	while (true) {
-	    	Scanner scanner = new Scanner(System.in);
-			System.out.println("Please Login");
-			
-			System.out.print("Enter username: ");
-			this.username = scanner.nextLine();
-			
-			System.out.print("Enter password: ");
-			this.password = scanner.nextLine();
-			
-			if (this.username.isBlank() || this.password.isBlank()) 
-				System.out.println("Credential musn't be empty. Please try again");
-			else break;
-    	}
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
+        super("", "","",""); 
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please Fill the information");
+        
+        while (true) {
+            
+            System.out.print("Enter username: ");
+            this.username = scanner.nextLine();
+            
+            System.out.print("Enter password (min 8 characters): ");
+            this.password = scanner.nextLine();
 
-    public void setPassword(String password){
-        this.password = password;
+            try {
+                validate(username, password);
+                break; // Exit loop if password is valid
+            } catch (InvalidCredentialException e) {
+                System.out.println("Error: " + e.getMessage());
+                System.out.println("Please try again.");
+            }
+        }
+        scanner.close();
     }
-    
-    public void setEmail(String email) {
-        this.email = email;
+    public static void validate(String username, String password) throws InvalidCredentialException {
+    	
+        if (password.isBlank() || username.isBlank()) {
+        	throw new InvalidCredentialException("User credential musn't be empty");
+        }
+      
     }
-    
 
 }
