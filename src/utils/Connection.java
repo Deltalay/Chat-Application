@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public interface Connection {
 	
-    void authenticate(User user) throws IOException, ClassNotFoundException;
+    void authenticate(NewUser user) throws IOException, ClassNotFoundException;
     void register(NewUser newuser) throws IOException, ClassNotFoundException;
     void sendMessage(Object message, ObjectOutputStream oos) throws IOException;
     Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException;

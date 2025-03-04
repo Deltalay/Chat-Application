@@ -51,7 +51,7 @@ public class ClientConnection implements Connection {
 	}
 
 	@Override
-	public void authenticate(User user) throws IOException, ClassNotFoundException {
+	public void authenticate(NewUser user) throws IOException, ClassNotFoundException {
 		
 		oos.writeObject(user);
 		oos.flush();

@@ -30,7 +30,6 @@ public class User  extends NewUser  {
                 System.out.println("Please try again.");
             }
         }
-        scanner.close();
     }
     public static void validate(String username, String password) throws InvalidCredentialException {
     	

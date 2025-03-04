@@ -43,10 +43,10 @@ public class ClientHandler extends Thread implements Connection {
 //		this.ois = new ObjectInputStream(socket.getInputStream());
 		this.oos = new ObjectOutputStream(socket.getOutputStream());
 		
-		this.ois = new UserObjectInputStream(socket.getInputStream());
+//		this.ois = new ObjectInputStream(socket.getInputStream());
 		
 //		this.uois = (UserObjectInputStream) new ObjectInputStream(socket.getInputStream());
-//		this.uois = new UserObjectInputStream(socket.getInputStream());
+		this.uois = new UserObjectInputStream(socket.getInputStream());
 		
 	}
 	
@@ -73,8 +73,15 @@ public class ClientHandler extends Thread implements Connection {
 	}
 	
 	@Override
-	public void authenticate(User user) throws IOException, ClassNotFoundException {
+	public void authenticate(NewUser user) throws IOException, ClassNotFoundException {
 		
+		if (user instanceof NewUser) {
+			System.out.println("New registration request received.");
+			register((NewUser) user);
+			cManager.addClient(username, this);
+		}
+		
+		System.out.println("Authentication request received.");
 		username = user.getUsername();
 		password = user.getPassword();
 //		System.out.println(username + password);
@@ -101,27 +108,23 @@ public class ClientHandler extends Thread implements Connection {
 	@Override
 	public Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		return ois.readObject();
+		return ((ObjectInputStream) uois).readObject();
 	}
 	
 	public void run() {
 		
 		try {
-			Object receivedObject = ((UserObjectInputStream) ois).readUserObject();
 			
-			if (receivedObject instanceof NewUser) {
-				System.out.println("New registration request received.");
-				register((NewUser) receivedObject);
-				cManager.addClient(username, this);
-				
-			} else if (receivedObject instanceof User) {
-				System.out.println("Authentication request received.");
-				authenticate((User) receivedObject);
-				cManager.addClient(username, this);
-				
-			} 
+			Object receivedObject;
 			
-			while (true) {
+			while (!isAuthenticated) {
+				receivedObject = ((UserObjectInputStream) uois).readUserObject();
+				authenticate((NewUser) receivedObject);
+				cManager.addClient(username, this);
+			}
+			
+			
+			while (isAuthenticated) {
 				
 				receivedObject = receiveMessage(ois);
 					
@@ -135,7 +138,7 @@ public class ClientHandler extends Thread implements Connection {
 						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
 					}
 						
-//					System.out.println( );
+					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
 					
 				}
 					

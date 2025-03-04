@@ -8,7 +8,7 @@ import utils.NewUser;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "172.23.2.74";
+	static String SERVER_ADDRESS = "192.168.100.152";
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 	

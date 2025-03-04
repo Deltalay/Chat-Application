@@ -36,7 +36,6 @@ public class NewUser implements Serializable {
                 System.out.println("Error: " + e.getMessage());
                 System.out.println("Please try again.");
             }
-            scanner.close();
         }
 		
 
