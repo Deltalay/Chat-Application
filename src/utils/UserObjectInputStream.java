@@ -17,6 +17,8 @@ public class UserObjectInputStream extends ObjectInputStream {
 		
 		if (receivedObject instanceof User) return (User) receivedObject;
 		
+		else if (receivedObject instanceof NewUser) return (NewUser) receivedObject;
+		
 		else throw new IOException("Wrong Class Type " + receivedObject.getClass());
 	}
 
