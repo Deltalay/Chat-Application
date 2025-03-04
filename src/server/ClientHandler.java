@@ -114,12 +114,16 @@ public class ClientHandler extends Thread implements Connection {
 	public void run() {
 		
 		try {
+			Object receivedObject = ((UserObjectInputStream) ois).readUserObject();
 			
-			Object receivedObject;
-			
-			while (!isAuthenticated) {
-				receivedObject = ((UserObjectInputStream) uois).readUserObject();
-				authenticate((NewUser) receivedObject);
+			if (receivedObject instanceof NewUser) {
+				System.out.println("New registration request received.");
+				register((NewUser) receivedObject);
+				cManager.addClient(username, this);
+				
+			} else if (receivedObject instanceof User) {
+				System.out.println("Authentication request received.");
+				authenticate((User) receivedObject);
 				cManager.addClient(username, this);
 			}
 			
