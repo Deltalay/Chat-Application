@@ -87,6 +87,8 @@ public class NewUser implements Serializable {
         }
       
     }
-	
+    public boolean isNewUser() {
+        return true;  // Always return true for new users
+    }
 
 }

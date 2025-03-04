@@ -38,5 +38,8 @@ public class User  extends NewUser  {
         }
       
     }
+    public boolean isNewUser() {
+        return false;  // Returning false for login users
+    }
 
 }
