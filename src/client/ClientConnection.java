@@ -11,6 +11,7 @@ import java.util.Scanner;
 import utils.Message;
 import utils.ChatSessionRequest;
 import utils.Connection;
+import utils.LoginSuccessResponse;
 import utils.User;
 import utils.NewUser;
 
@@ -51,23 +52,24 @@ public class ClientConnection implements Connection {
 	}
 
 	@Override
-	public void authenticate(NewUser user) throws IOException, ClassNotFoundException {
+	public void authenticate(User user) throws IOException, ClassNotFoundException {
 		
 		oos.writeObject(user);
 		oos.flush();
 
-  		String response = (String) ois.readObject();
+  		Object response = ois.readObject();
   
   		if (response.equals("login failed")) {
   		
             System.out.println("Please Login again");
       	}
   		
-		else {
+		if (response instanceof LoginSuccessResponse) {
+			this.user = ((LoginSuccessResponse) response).getUser();
 			System.out.println("\033[H\033[2J");
-			System.out.println(response);
+			System.out.println(((LoginSuccessResponse) response).message);
 			ChatClient.isAuthenticated = true;
-			
+			System.out.println(this.user.getUserId());
 			startCommunication(user, oos, ois);
 		}
 	}
@@ -89,7 +91,7 @@ public class ClientConnection implements Connection {
             content = scanner.nextLine();
             System.out.print("\033[1A");
             System.out.print("\033[2K");
-
+            
             if (content.startsWith("/msg")) {
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
@@ -98,7 +100,7 @@ public class ClientConnection implements Connection {
                 receiver = parts[1];
 
                 System.out.println("========== Private Chat With " + receiver + " ==========\n");
-                ChatSessionRequest openChatReq = new ChatSessionRequest(user.getUsername(), receiver);
+                ChatSessionRequest openChatReq = new ChatSessionRequest(this.user, receiver);
                 oos.writeObject(openChatReq);
                 oos.flush();
 
@@ -107,21 +109,27 @@ public class ClientConnection implements Connection {
                 System.out.print("\033[2K");
             }
 
-            if (content.startsWith("/quit")) {
+            if (content.startsWith("/quit")) 
+            {
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
 
                 receiver = "";
                 System.out.println("Exited private chat");
         		System.out.println("Type '/msg <Username>' to message someone");
-                ChatSessionRequest openChatReq = new ChatSessionRequest(user.getUsername());
+                ChatSessionRequest openChatReq = new ChatSessionRequest(this.user);
                 oos.writeObject(openChatReq);
                 oos.flush();
                 continue;
             }
 
-            message = new Message(user.getUsername(), receiver, content);
+            message = new Message(this.user.getUsername(), receiver, content);
             sendMessage(message, oos);
+            
+            if (content.startsWith("/close")) {
+            	disconnect();
+            	break;
+            }
         }
 	}
 

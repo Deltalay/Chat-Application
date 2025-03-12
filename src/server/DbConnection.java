@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import utils.Message;
+import utils.User;
 
 
 public class DbConnection {
@@ -15,6 +16,7 @@ public class DbConnection {
     private String url = "jdbc:mysql://localhost:3306/";
     private String dbusername = "root";
     private String dbPassword = getDbPassword();
+    ClientHandler cHandler;
 
     private String username;
     private String password;
@@ -26,16 +28,16 @@ public class DbConnection {
 
     	String readPassword = "";
     	
-    	//  try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
+    	  try (BufferedReader br = new BufferedReader(new FileReader("info.txt"))) {
     		
-        //      readPassword = br.readLine();
+              readPassword = br.readLine();
             
-        //  } catch (IOException e) {
+          } catch (IOException e) {
         	
-        //      e.printStackTrace();  
-        //  }
+              e.printStackTrace();  
+          }
     	
-    	return "";
+    	return readPassword;
     }
   
     
@@ -43,9 +45,14 @@ public class DbConnection {
         initializeDatabase();
     } 
     
+    public DbConnection(ClientHandler cHandler) {
+    	this.cHandler = cHandler;
+    	initializeDatabase();
+    }
+    
     public void initializeDatabase() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver"); //
             Connection conn = DriverManager.getConnection(url, dbusername, dbPassword);
             Statement stmt = conn.createStatement();
     
@@ -61,18 +68,17 @@ public class DbConnection {
     
             conn.close();
             
-            // Connect to the chat database
             conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
             stmt = conn.createStatement();
     
-            // Check if the users table exists
             String checkTableQuery = "SHOW TABLES LIKE 'users'";
             rs = stmt.executeQuery(checkTableQuery);
     
             if (!rs.next()) {
-                String createTableQuery = "CREATE TABLE users (" 
-                                        + "username VARCHAR(255) PRIMARY KEY, " 
-                                        + "email VARCHAR(255) NOT NULL, "
+                String createTableQuery = "CREATE TABLE users ("
+                						+ "id INT AUTO_INCREMENT PRIMARY KEY, " 
+                                        + "username VARCHAR(255) UNIQUE, " 
+                                        + "email VARCHAR(255) NOT NULL UNIQUE, "
                                         + "dob DATE NOT NULL, "
                                         + "password VARCHAR(255) NOT NULL)";
                 stmt.execute(createTableQuery);
@@ -86,22 +92,26 @@ public class DbConnection {
             	
             	String createTableQuery = "CREATE TABLE messages (" 
 										+ "id INT AUTO_INCREMENT PRIMARY KEY, " 
-										+ "username VARCHAR(63) NOT NULL, "
-										+ "receiver VARCHAR(63) NOT NULL, "
-										+ "message_text TEXT) ";
+										+ "sender_id INT NOT NULL, "
+										+ "receiver_id INT NOT NULL, "
+										+ "message_text TEXT, "
+										+ "FOREIGN KEY (sender_id) REFERENCES users(id),"
+										+ "FOREIGN KEY (receiver_id) REFERENCES users(id))";
 				
             	stmt.execute(createTableQuery);
 				System.out.println("Created 'messages' table.");
             }
     
             conn.close();
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | SQLException e ) {
         	
-            e.printStackTrace();
+            
+        } finally {
+        	
         }
     }   
     
-    public boolean check_login(String InputName,String InputPassword) {
+    public void check_login(String InputName,String InputPassword) {
     	
         try {
         	
@@ -112,11 +122,11 @@ public class DbConnection {
             ResultSet rs;
           
             conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
-            stmt = conn.createStatement();
+//            stmt = conn.createStatement();
             
             
             
-            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+            String query = "SELECT id FROM users WHERE username = ? AND password = ?";
             PreparedStatement pstmt = conn.prepareStatement(query);
             pstmt.setString(1, InputName);
             pstmt.setString(2, InputPassword);
@@ -125,21 +135,26 @@ public class DbConnection {
             
             if (rs.next()) {
             	
+                int userId = rs.getInt("id");
+//                ClientHandler.user.
+//                System.out.println(user_id);
+                cHandler.isAuthenticated = true;
+                cHandler.user.setUserId(userId);
                 conn.close();
-                return true;
+                
             }
             
             conn.close();
             
-        } catch(Exception e) {
+        } catch(ClassNotFoundException | SQLException e) {
         	
             e.printStackTrace();
         }
         
-        return false;
+//        return n;
     }
     
-    public List<Message> private_chat(String sender, String receiver) {
+    public List<Message> private_chat(int sender, int receiver) {
 
         List <Message> messageList = new ArrayList<>();
         Message message;
@@ -152,19 +167,23 @@ public class DbConnection {
             
             ResultSet rs ;
 
-            String query = "SELECT username, receiver, message_text FROM messages";
+//            String query = "SELECT * FROM messages where sender_id = " + sender + " and receiver_id = " + receiver;
+            String query = "SELECT s.username as 'Sender', r.username as 'Receiver', m.message_text as 'Message' "
+            			 + "FROM messages m "
+            			 + "JOIN users s ON m.sender_id = s.id "
+            			 + "JOIN users r ON m.receiver_id = r.id "
+            			 + "WHERE sender_id = " + sender + " "
+            			 + "AND receiver_id = " + receiver;
             rs = stmt.executeQuery(query);
             
             while (rs.next()) {
             	
-                String s = rs.getString("username");
-                String r = rs.getString("receiver");
-                String m = rs.getString("message_text");  
+            	String s = rs.getString("Sender");
+            	String r = rs.getString("Receiver");
+                String m = rs.getString("Message");  
                 
                 message = new Message(s, r, m);
-                
-                if ((sender.equals(s) && receiver.equals(r)) || (sender.equals(r) && receiver.equals(s))) 
-                    messageList.add(message);
+                messageList.add(message);
                 
             }
 //            for (int i = 0; i < messageList.size(); i++) {
@@ -176,7 +195,7 @@ public class DbConnection {
             
             conn.close();
             
-        } catch(Exception e) {
+        } catch(SQLException | ClassNotFoundException e) {
         	
             e.printStackTrace();
         }
@@ -184,25 +203,25 @@ public class DbConnection {
         return messageList;
     }
     
-    public void save_message(String sender, String receiver, String message){
+    public void save_message(int senderId, int receiverId, String message){
         
     	try {
     		
             Class.forName("com.mysql.cj.jdbc.Driver");
-//            url = "jdbc:mysql://localhost:3306/chat";
             Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
             Statement stmt = conn.createStatement();
             
-            String query = "INSERT INTO messages (username, receiver, message_text) VALUES ('" + sender + "', '" + receiver + "', '" + message + "');";
+            String query = "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES ('" + senderId + "', '" + receiverId + "', '" + message + "');";
             stmt.executeUpdate(query);
             
             conn.close();
             
-        } catch(Exception e) {
+        } catch(ClassNotFoundException | SQLException e) {
         	
             e.printStackTrace();
         }
     }
+    
     public boolean check_user(String email, String username){
         
     	try {
@@ -224,51 +243,87 @@ public class DbConnection {
             }
 
             
-                conn.close();
+            conn.close();
             
-        } catch(Exception e) {
+        } catch(ClassNotFoundException | SQLException e) {
         	
             e.printStackTrace();
             return true;
         }
         return false;
     }
+    
     public void save_user(String dob,String email, String username, String password){
         
     	try {
     		
             Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://localhost:3306/chat";
-            Connection conn = DriverManager.getConnection(url, dbusername, dbPassword);
-            Statement stmt = conn.createStatement();
+//            String url = "jdbc:mysql://localhost:3306/chat";
+            Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
+//            Statement stmt = conn.createStatement();
             
             String query = "INSERT INTO users (username, password, dob, email) VALUES (?, ?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(query);
-        
-        // Set the values for the prepared statement
+
             pstmt.setString(1, username);
             pstmt.setString(2, password);
-        
-        // Check if dob is in the correct date format (YYYY-MM-DD)
+ 
             try {
-                java.sql.Date sqlDate = java.sql.Date.valueOf(dob);  // Converts string to SQL Date
-                pstmt.setDate(3, sqlDate);  // Set dob as Date
+            	
+                java.sql.Date sqlDate = java.sql.Date.valueOf(dob);  
+                pstmt.setDate(3, sqlDate);
+                
             } catch (IllegalArgumentException e) {
                 System.out.println("Invalid date format. Expected YYYY-MM-DD");
-                return;  // Exit if the date format is invalid
+                return;  
             }
         
             pstmt.setString(4, email);
-        
-        // Execute the update
             pstmt.executeUpdate();
             
                 conn.close();
             
-        } catch(Exception e) {
+        } catch(ClassNotFoundException | SQLException e) {
         	
             e.printStackTrace();
         }
+    }
+    
+    public boolean findReceiver(String receiver) {
+    	
+    	 // TODO COMPLETE THE MISSING LOGIC TO FIND IF THE RECEIVER EXIST
+    	return true;
+    }
+    
+    public int findReceiverId(String receiver) {
+
+    	int receiverId = 0;
+
+    	
+    	try {
+    		
+    		Class.forName("com.mysql.cj.jdbc.Driver");
+    		Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
+    		String query = "SELECT id FROM users WHERE username = ?";
+    		
+    		PreparedStatement pstmt = conn.prepareStatement(query);
+    		pstmt.setString(1, receiver);
+    		
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next()) {
+    			receiverId = rs.getInt("id");
+    			conn.close();
+    			return receiverId;
+    		}
+    		
+    		conn.close();
+    		
+    	} catch (SQLException | ClassNotFoundException e) {
+    		
+    	}
+  	
+    	return receiverId;
+    	
     }
     
     public void setUser(String user) {

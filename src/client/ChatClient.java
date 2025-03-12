@@ -8,7 +8,7 @@ import utils.NewUser;
 
 public class ChatClient {
 	
-	static String SERVER_ADDRESS = "192.168.100.152";
+	static String SERVER_ADDRESS = "192.168.100.38";
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 	
@@ -23,19 +23,24 @@ public class ChatClient {
 			if (scanner.hasNextLine()) {
 				choice = scanner.nextLine();
 			
-				if (choice.startsWith("/login")) {
-					
-					User user = new User();
+				if (choice.startsWith("/login")) 
+				{	
+					User user = User.createUserObject(scanner);
 					cc.authenticate(user);
-				} else if (choice.startsWith("/register")) {
-					NewUser newUser = new NewUser();
+				} 
+				
+				else if (choice.startsWith("/register")) 
+				{
+					NewUser newUser = NewUser.createNewUserObject(scanner);
 					cc.register(newUser);
-				} else {
-					System.out.println("Invalid command, please try again");
-				}
+				} 
+				
+				else System.out.println("Invalid command, please try again");
+				
 			}
 			
 		} while (!isAuthenticated);
+		
 		scanner.close();
 		
 	}

@@ -1,15 +1,15 @@
 package server;	
 
 import java.io.IOException;
-//import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-//import java.util.Map;
-//import java.util.concurrent.ConcurrentHashMap;
-//import java.util.concurrent.ConcurrentMap;
-//import java.util.concurrent.CopyOnWriteArrayList;
+
+// RUN THE CHAT SERVER: java -cp "bin;lib/mysql-connector-j-9.2.0.jar;." server.ChatServer
+
 
 public class ChatServer {
+	
+	public static final double HOUR_WASTED = 11.8;
 	
 	private static final int PORT = 3001;
 	
@@ -19,19 +19,25 @@ public class ChatServer {
 			System.out.println("Server Started!");
 			
 			ClientManager cManager = new ClientManager();
-			
 			while (true) {
 				
-				Socket clientSocket = serverSocket.accept();
-				ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
-				cHandler.start();
+				try {
+
+					Socket clientSocket = serverSocket.accept();
+					ClientHandler cHandler = new ClientHandler(clientSocket, cManager);
+					cHandler.start();
+				
+				} catch (IOException e) {
+					System.out.println("Error accepting client connection: " + e.getMessage());
+				}
+				
 			}
 
-			
-		} catch (IOException e) {
+		} catch (IOException /*| IllegalArgumentException*/ e ) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Error starting the server: " + e.getMessage());
 		}
+		
 		
 	}
 }

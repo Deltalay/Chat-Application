@@ -1,7 +1,12 @@
 package utils;
 
 public class InvalidCredentialException extends Exception {
-    public InvalidCredentialException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public InvalidCredentialException(String message) {
         super(message);
     }
 }

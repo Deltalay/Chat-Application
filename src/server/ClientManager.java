@@ -9,30 +9,29 @@ import utils.Message;
 
 public class ClientManager {
 	
-	private Map<String, ClientHandler> clientSockets = new ConcurrentHashMap<>();
-	private Map<String, String> chatSessions = new ConcurrentHashMap<>();
+	private Map<Integer, ClientHandler> clientSockets = new ConcurrentHashMap<>();
+	private Map<Integer, Integer> chatSessions = new ConcurrentHashMap<>();
 	
 	DbConnection db = new DbConnection();
 
-	public void addClient(String username, ClientHandler cHandler) {
+	public void addClient(int userId, ClientHandler cHandler) {
 		
-		clientSockets.put(username, cHandler);
+		clientSockets.put(userId, cHandler);
+	}
+		
+	public void removeclient(int userId) {
+		
+		clientSockets.remove(userId);
 	}
 	
-	public void removeclient(String username) {
+	public void addClientChatSession(int senderId, int receiverId) {
 		
-		clientSockets.remove(username);
+		chatSessions.put(senderId, receiverId);
 	}
-	
-	public void addClientChatSession(String sender, String receiver) {
-		
-		chatSessions.put(sender, receiver);
-	}
-	
 	
 	public void broadcastMessages(Message message, ClientHandler cHandler) {
 		
-		for (Map.Entry<String, ClientHandler> entry: clientSockets.entrySet()) {
+		for (Map.Entry<Integer, ClientHandler> 	entry: clientSockets.entrySet()) {
 			
 			try {
 				
@@ -46,25 +45,25 @@ public class ClientManager {
 		}
 	}
 	
-	public List<Message> getOldMessages(String sendFrom, String sendTo) {
+	public List<Message> getOldMessages(int sender, int receiver) {
 		
-		List<Message> messageHistory = db.private_chat(sendFrom, sendTo);
+		List<Message> messageHistory = db.private_chat(sender, receiver);
 		
 		return messageHistory;
 	}
 	
-	public void sendPrivateMessage(Message message) {
-		
-		String sender = message.getSender();
-		String receiver = message.getReceiver();	
+	public void sendPrivateMessage(Message message, int senderId, int receiverId) {
 		
 		try {
-			clientSockets.get(sender).sendMessage(message, clientSockets.get(sender).oos);	
 		
-			if (isReceiverChatSessionOpen(sender, receiver)) 
-				clientSockets.get(receiver).sendMessage(message, clientSockets.get(receiver).oos);
+			clientSockets.get(senderId).sendMessage(message, clientSockets.get(senderId).oos);	
 			
-		} catch (IOException e) {
+			if (isReceiverChatSessionOpen(senderId, receiverId)) 
+				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
+			
+			db.save_message(senderId, receiverId, message.getContent());
+			
+		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -72,9 +71,19 @@ public class ClientManager {
 
 	}
 	
-	public boolean isReceiverChatSessionOpen(String sender, String receiver) {
+	public boolean isReceiverChatSessionOpen(int sender, int receiver) {
 		
-		String session = chatSessions.get(receiver);
-	    return clientSockets.containsKey(receiver) && session != null && session.equals(sender);
+		Integer session = chatSessions.get(receiver);
+	    return clientSockets.containsKey(receiver) && session != null && session == sender;
+	}
+	
+	public boolean isReceiverExist(String receiver) {
+
+		return db.findReceiver(receiver);
+	}
+
+	public int getReceiverId(String receiver) {
+		
+		return db.findReceiverId(receiver);
 	}
 }

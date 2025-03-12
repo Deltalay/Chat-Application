@@ -10,182 +10,207 @@ import utils.ChatHistory;
 import utils.Message;
 import utils.ChatSessionRequest;
 import utils.Connection;
+import utils.LoginSuccessResponse;
 import utils.User;
 import utils.UserObjectInputStream;
 import utils.NewUser;
 
+// HOURS WASTED: 7
+
 public class ClientHandler extends Thread implements Connection {
   
-  public Socket socket;
-  public String username;
-  public String password;
-  public String dob;
-  public String email;
-  public User user;
-  public NewUser newuser;
+	public Socket socket;
+	public String username;
+	public String password;
+	public String dob;
+	public String email;
+	public User user;
+	public NewUser newUser;
   
-  DbConnection db = new DbConnection();
-  boolean isAuthenticated = false;
+	DbConnection db = new DbConnection(this);
+	boolean isAuthenticated = false;
   
-  ClientManager cManager;
-  Message message;
-  ObjectOutputStream oos;
-  ObjectInputStream ois;
-  ChatSessionRequest openChatReq;
-  ChatHistory cHistory;
+	ClientManager cManager;
+	Message message;
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
+	ChatSessionRequest openChatReq;
+	ChatHistory cHistory;
   
-  UserObjectInputStream uois;
+	UserObjectInputStream uois;
   
-  ClientHandler(Socket socket, ClientManager cManager) throws IOException {
+	ClientHandler(Socket socket, ClientManager cManager) throws IOException {
     
-    this.socket = socket;
-    this.cManager = cManager;
-//    this.ois = new ObjectInputStream(socket.getInputStream());
-    this.oos = new ObjectOutputStream(socket.getOutputStream());
+		this.socket = socket;
+		this.cManager = cManager;
+//		this.ois = new ObjectInputStream(socket.getInputStream());
+		this.oos = new ObjectOutputStream(socket.getOutputStream());
     
-//    this.ois = new ObjectInputStream(socket.getInputStream());
+//		this.ois = new ObjectInputStream(socket.getInputStream());
     
-//    this.uois = (UserObjectInputStream) new ObjectInputStream(socket.getInputStream());
-    this.uois = new UserObjectInputStream(socket.getInputStream());
+//		this.uois = (UserObjectInputStream) new ObjectInputStream(socket.getInputStream());
+		this.uois = new UserObjectInputStream(socket.getInputStream());
+		
     
-  }
+	}
   
-  @Override 
-  public void register(NewUser newuser) throws IOException, ClassNotFoundException {
+	@Override 
+	public void register(NewUser newuser) throws IOException, ClassNotFoundException {
     
-    username = newuser.getUsername();
-    email = newuser.getEmail();
-    dob = newuser.getDob();
-    password = newuser.getPassword();
+		username = newuser.getUsername();
+		email = newuser.getEmail();
+		dob = newuser.getDob();
+		password = newuser.getPassword();
     
-    boolean userExists = db.check_user(email, username);
+		boolean userExists = db.check_user(email, username);
     
-    if (!userExists) { 
-      db.save_user(dob, email, username, password);
-      oos.writeObject("Account created successfully! Welcome, " + username + "!");
-      System.out.println(username + " has registered successfully.");
-    } else {
+		if (!userExists) { 
+			db.save_user(dob, email, username, password);
+			oos.writeObject("Account created successfully! Welcome, " + username + "!");
+			System.out.println(username + " has registered successfully.");
+		} else {
       
-      oos.writeObject("Account create failed!");
-      System.out.println(username + " registration failed (User already exists).");
-    }
+			oos.writeObject("Account create failed!");
+			System.out.println(username + " registration failed (User already exists).");
+		}
 
-  }
+	}
   
-  @Override
-  public void authenticate(NewUser user) throws IOException, ClassNotFoundException {
+	@Override
+	public void authenticate(User user) throws IOException, ClassNotFoundException {
+	    
+	    System.out.println("Authentication request received.");
+	    username = user.getUsername();
+	    password = user.getPassword();
+	              
+//	    isAuthenticated = db.check_login(username, password);
+	    db.check_login(username, password);
+	      
+	    if (isAuthenticated) 
+	    {	
+	    	oos.writeObject(new LoginSuccessResponse(user, "Login Successful"));
+//	    	System.out.println(user.getUserId());
+	    }
     
-     if (user.isNewUser()) {  // Use isNewUser() instead of instanceof
-        System.out.println("New registration request received.");
-        register((NewUser) user);
-        return;
-    }
-    
-    System.out.println("Authentication request received.");
-    username = user.getUsername();
-    password = user.getPassword();
-//    System.out.println(username + password);
-              
-    isAuthenticated = db.check_login(username, password);
-      
-    if (isAuthenticated) oos.writeObject("Login successful!");
-    
-        else {
-          
+        else 
+        {
             oos.writeObject("login failed");
             System.out.println(username + " login failed.");  
         }
     
-  }  
+	}  
   
-  @Override
-  public void sendMessage(Object message, ObjectOutputStream oos) throws IOException {
-    // TODO Auto-generated method stub
+	@Override
+  	public void sendMessage(Object message, ObjectOutputStream oos) throws IOException {
+	  	// TODO Auto-generated method stub
         oos.writeObject(message);
         oos.flush();
-  }
+  	}
 
 
-  @Override
-  public Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    // TODO Auto-generated method stub
-    return ((ObjectInputStream) uois).readObject();
-  }
+	@Override
+  	public Object receiveMessage(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+	  	// TODO Auto-generated method stub
+	  	return ois.readObject();
+  	}
   
-  public void run() {
-    
-    try {
-      
-      Object receivedObject;
-      
-      while (!isAuthenticated) {
-        receivedObject = ((UserObjectInputStream) uois).readUserObject();
-        authenticate((NewUser) receivedObject);
-        cManager.addClient(username, this);
-      }
-      
-      
-      while (isAuthenticated) {
-        
-        receivedObject = receiveMessage(ois);
-          
-        if (receivedObject instanceof Message) {
-            
-          message = (Message) receivedObject;
-            
-          if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
-          else {
-            cManager.sendPrivateMessage(message);
-            db.save_message(message.getSender(), message.getReceiver(), message.getContent());
-          }
-            
-          System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
-          
-        }
-          
-        if (receivedObject instanceof ChatSessionRequest) {
-            
-          openChatReq = (ChatSessionRequest) receivedObject;
-          String sender = openChatReq.getSender();
-          String receiver;
-          if(openChatReq.getReceiver() == "") receiver="";
-          else {
-            receiver = openChatReq.getReceiver();
-            
-            List<Message> oldMessages = cManager.getOldMessages(sender, receiver);
-            cHistory = new ChatHistory(oldMessages);
-            
-            sendMessage(cHistory, oos);
-          }
-  
-          cManager.addClientChatSession(sender, receiver);
-        }
-      }
-      
-    } catch (IOException | ClassNotFoundException e) {
-      // TODO Auto-generated catch block
-      cManager.removeclient(username);
-      System.out.println(username + " is disconnected");
-      
-    } finally {
-      
-      try {
-        
-        if (ois != null) ois.close();
-              if (oos != null) oos.close();
-              if (socket != null) socket.close();
-        
-      } catch (IOException e) {
-        if (username != null) {
-              cManager.removeclient(username);
-              System.out.println(username + " is disconnected");
-          } else {
-              System.out.println("Client disconnected before authentication.");
-          }
-      }
-      
-    }
-    
-  }
+	public void run() {
 
+		Object receivedObject;
+		while (!isAuthenticated) {
+
+			try {
+					
+				receivedObject = ((UserObjectInputStream) uois).readUserObject();
+				
+				if (receivedObject instanceof User) 
+				{
+					user = (User) receivedObject;
+					authenticate(user);
+					cManager.addClient(user.getUserId(), this);
+				}
+					
+				else if (receivedObject instanceof NewUser) 
+				{
+					newUser = (NewUser) receivedObject;
+			        System.out.println("New registration request received.");
+			        register(newUser);
+			        return;
+			    }	
+					
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+      	
+		try {
+			int receiverId = 0;
+
+			while (isAuthenticated) {
+				receivedObject = receiveMessage((ObjectInputStream) uois);
+					
+				if (receivedObject instanceof Message) {
+	            
+					message = (Message) receivedObject;
+	            
+					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
+					else {
+						cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
+//						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
+					}
+	            
+					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
+	          
+				}
+	          
+				if (receivedObject instanceof ChatSessionRequest) {
+	            
+					openChatReq = (ChatSessionRequest) receivedObject;
+					
+					boolean isUserExist = cManager.isReceiverExist(openChatReq.getReceiver());
+					
+					if (isUserExist) {
+
+						receiverId = cManager.getReceiverId(openChatReq.getReceiver());
+						System.out.println("Chat Session Opened For " + 
+											user.getUsername() + ", ID: " + user.getUserId() + " to " + 
+											openChatReq.getReceiver() + ", ID: " + receiverId);
+								
+						List<Message> oldMessages = cManager.getOldMessages(openChatReq.getUser().getUserId(), receiverId);
+						cHistory = new ChatHistory(oldMessages);
+		            
+						sendMessage(cHistory, oos);
+					
+							
+						cManager.addClientChatSession(openChatReq.getUser().getUserId(), receiverId);
+					}
+				}
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			if (user != null) {
+				cManager.removeclient(user.getUserId());
+				System.out.println(user.getUsername() + " is disconnected");
+			}
+	      
+		} finally {
+		      
+			try {
+		       
+				if (ois != null) ois.close();
+				if (oos != null) oos.close();
+				if (socket != null) socket.close();
+		        
+			} catch (IOException e) {
+				if (user != null) {
+					cManager.removeclient(user.getUserId());
+					System.out.println(user.getUsername() + " is disconnected");
+				}
+		    		
+				else System.out.println("Client disconnected before authentication.");
+			}
+		}			
+	}
 }
