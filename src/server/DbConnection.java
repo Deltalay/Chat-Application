@@ -172,8 +172,11 @@ public class DbConnection {
             			 + "FROM messages m "
             			 + "JOIN users s ON m.sender_id = s.id "
             			 + "JOIN users r ON m.receiver_id = r.id "
-            			 + "WHERE sender_id = " + sender + " "
-            			 + "AND receiver_id = " + receiver;
+            			 + "WHERE (sender_id = " + sender + " "
+            			 + "AND receiver_id = " + receiver + ") "
+            			 + "OR (sender_id = " + receiver + " "
+            			 + "AND receiver_id = " + sender + ") ORDER BY m.id";
+            
             rs = stmt.executeQuery(query);
             
             while (rs.next()) {

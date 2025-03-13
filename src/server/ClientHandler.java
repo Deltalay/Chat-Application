@@ -91,14 +91,11 @@ public class ClientHandler extends Thread implements Connection {
 	    System.out.println("Authentication request received.");
 	    username = user.getUsername();
 	    password = user.getPassword();
-	              
-//	    isAuthenticated = db.check_login(username, password);
 	    db.check_login(username, password);
 	      
 	    if (isAuthenticated) 
 	    {	
 	    	oos.writeObject(new LoginSuccessResponse(user, "Login Successful"));
-//	    	System.out.println(user.getUserId());
 	    }
     
         else 
@@ -126,10 +123,10 @@ public class ClientHandler extends Thread implements Connection {
 	public void run() {
 
 		Object receivedObject;
-		while (!isAuthenticated) {
+		
 
-			try {
-					
+		try {
+			while(!isAuthenticated) {		
 				receivedObject = ((UserObjectInputStream) uois).readUserObject();
 				
 				if (receivedObject instanceof User) 
@@ -145,12 +142,12 @@ public class ClientHandler extends Thread implements Connection {
 			        System.out.println("New registration request received.");
 			        register(newUser);
 			    }	
-					
-			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
-			}
+			}	
 			
-		}
+		} catch (ClassNotFoundException | IOException e) {
+			System.out.println("User failed to connect to the server: " + e.getMessage());
+		}	
+		
       	
 		try {
 			int receiverId = 0;

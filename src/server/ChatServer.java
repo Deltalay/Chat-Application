@@ -9,7 +9,7 @@ import java.net.Socket;
 
 public class ChatServer {
 	
-	public static final double HOUR_WASTED = 11.8;
+	public static final double HOUR_WASTED = 12;
 	
 	private static final int PORT = 3001;
 	
