@@ -66,7 +66,16 @@ public class ClientHandler extends Thread implements Connection {
     
 		if (!userExists) { 
 			db.save_user(dob, email, username, password);
-			oos.writeObject("Account created successfully! Welcome, " + username + "!");
+			this.user = new User(username, password);
+	
+			authenticate(this.user);  // Call authentication
+			if (isAuthenticated) {  // Check authentication status before sending response
+				oos.writeObject(new LoginSuccessResponse(this.user, "Account created successfully! Welcome, " + username + "!"));
+				cManager.addClient(this.user.getUserId(), this);
+			} else {
+				oos.writeObject("Account created, but login failed.");
+			}
+	
 			System.out.println(username + " has registered successfully.");
 		} else {
       
@@ -135,7 +144,6 @@ public class ClientHandler extends Thread implements Connection {
 					newUser = (NewUser) receivedObject;
 			        System.out.println("New registration request received.");
 			        register(newUser);
-			        return;
 			    }	
 					
 			} catch (ClassNotFoundException | IOException e) {

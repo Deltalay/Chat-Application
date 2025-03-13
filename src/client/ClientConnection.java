@@ -38,16 +38,18 @@ public class ClientConnection implements Connection {
 		oos.flush();
 		System.out.println("Waiting for server response...");	
 
-		String response = (String) ois.readObject();
+		Object response = ois.readObject();
 		if (response.equals("Account create failed!")) {
   		
 			System.out.println("Account create failed! Please try again");
 		}
-		else {
+		if(response instanceof LoginSuccessResponse) {
+			this.user = ((LoginSuccessResponse) response).getUser();
 			System.out.println("\033[H\033[2J");
-			System.out.println(response);
+			System.out.println(((LoginSuccessResponse) response).message);
 			ChatClient.isAuthenticated = true;
-			startCommunication(newuser, oos, ois);
+			System.out.println(this.user.getUserId());
+			startCommunication(this.user, oos, ois);
 		}
 	}
 
