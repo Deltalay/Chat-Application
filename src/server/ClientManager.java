@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import utils.Message;
+import utils.Contact;
 
 public class ClientManager {
 	
@@ -50,6 +51,12 @@ public class ClientManager {
 		List<Message> messageHistory = db.private_chat(sender, receiver);
 		
 		return messageHistory;
+	}
+
+	public List<Contact> getContactAlls(int senderId){
+		
+        return db.getAllContact(senderId);
+
 	}
 	
 	public void sendPrivateMessage(Message message, int senderId, int receiverId) {

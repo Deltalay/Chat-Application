@@ -9,6 +9,7 @@ import java.util.List;
 
 import utils.Message;
 import utils.User;
+import utils.Contact;
 
 
 public class DbConnection {
@@ -204,6 +205,48 @@ public class DbConnection {
         }
         
         return messageList;
+    }
+
+    public List<Contact> getAllContact(int sender){
+        List <Contact> contactList = new ArrayList<>();
+        
+        try {
+            
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
+            Statement stmt = conn.createStatement();
+            
+            ResultSet rs ;
+            String query = "SELECT u.id, u.username AS contact, " +
+                                    "(SELECT message_text FROM messages m " +
+                                    " WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
+                                    "    OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
+                                    " ORDER BY m.id DESC LIMIT 1) AS last_message " +
+                                    "FROM users u " +
+                                    "WHERE u.id IN ( " +
+                                    "    SELECT sender_id FROM messages WHERE receiver_id = " + sender + " " +
+                                    "    UNION " +
+                                    "    SELECT receiver_id FROM messages WHERE sender_id = " + sender + " " +
+                                    ")";
+
+                        rs = stmt.executeQuery(query);
+
+                        while (rs.next()) {
+                        String contact = rs.getString("contact");
+                        String message = rs.getString("last_message");
+            
+                        contactList.add(new Contact(contact, message));
+                            
+                    }
+                        
+                        conn.close();
+                        
+                    } catch(SQLException | ClassNotFoundException e) {
+                        
+                        e.printStackTrace();
+                    }
+                    
+                    return contactList;
     }
     
     public void save_message(int senderId, int receiverId, String message){

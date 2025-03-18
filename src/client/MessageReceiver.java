@@ -1,11 +1,13 @@
 package client;
 
+import javafx.application.Platform;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
 
 import utils.ChatHistory;
 import utils.Message;
+import utils.Contact;
 
 public class MessageReceiver implements Runnable {
 
@@ -14,6 +16,7 @@ public class MessageReceiver implements Runnable {
 	Message message;
 	ChatHistory cHistory;
 	ClientConnection cConnection;
+	Contact cContact;
 
 	public MessageReceiver(ObjectInputStream ois, ClientConnection cConnection) {
 //		this.socket = socket;
@@ -47,7 +50,12 @@ public class MessageReceiver implements Runnable {
 					else System.out.println(message.getSender() + ": " + line);
 				
 				}
-				
+
+				if(receivedObject instanceof Contact){
+					Contact contact = (Contact) receivedObject;
+                    cConnection.addContact(contact);
+				}
+
 				if (receivedObject instanceof ChatHistory) {
 					
 					cHistory = (ChatHistory) receivedObject;

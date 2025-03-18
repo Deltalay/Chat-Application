@@ -14,6 +14,7 @@ import utils.LoginSuccessResponse;
 import utils.User;
 import utils.UserObjectInputStream;
 import utils.NewUser;
+import utils.Contact;
 
 // HOURS WASTED: 7
 
@@ -151,6 +152,9 @@ public class ClientHandler extends Thread implements Connection {
       	
 		try {
 			int receiverId = 0;
+			List<Contact> contactList = cManager.getContactAlls(user.getUserId());
+            sendMessage(contactList, oos);  // Send the contact list
+			
 
 			while (isAuthenticated) {
 				receivedObject = receiveMessage((ObjectInputStream) uois);
