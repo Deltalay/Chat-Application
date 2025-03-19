@@ -16,7 +16,8 @@ import utils.NewUser;
 
 public class ChatClient extends Application {
 
-	static String SERVER_ADDRESS = "192.168.100.38";
+	static String SERVER_ADDRESS = "172.23.3.172";
+
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
 
@@ -27,7 +28,7 @@ public class ChatClient extends Application {
 		
 		Label welcomeLabel = new Label("Welcome! Please choose a way");
 		welcomeLabel.setStyle("-fx-font-size: 24px");
-		
+
         Button loginButton = new Button("Login");
         Button registerButton = new Button("Register");
 
@@ -53,6 +54,7 @@ public class ChatClient extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 		primaryStage.setMaximized(true);
+
 	}
 	
 	private void login_page(Stage primaryStage,ClientConnection cc) {

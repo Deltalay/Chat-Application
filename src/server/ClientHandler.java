@@ -154,10 +154,15 @@ public class ClientHandler extends Thread implements Connection {
       	
 		try {
 			int receiverId = 0;
-			List<Contact> getContactList = cManager.getContactAlls(user.getUserId());
-			ContactList contactList = new ContactList(getContactList);
 			
-            sendMessage(contactList, oos);  // Send the contact list
+			// CODE BAT, ORT DG MUY NA TROV TE
+
+//			List<Contact> getContactList = cManager.getContactAlls(user.getUserId());
+//			ContactList contactList = new ContactList(getContactList);
+
+//			List<Contact> contactList = cManager.getContactAlls(user.getUserId());
+
+//            sendMessage(contactList, oos);  // Send the contact list
 			
 
 			while (isAuthenticated) {

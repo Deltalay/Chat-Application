@@ -1,7 +1,7 @@
 package utils;
 
 import java.io.Serializable;
-import java.util.List;
+
 
 public class Contact implements Serializable {
     /**
@@ -25,5 +25,6 @@ public class Contact implements Serializable {
     public String getMessage() {
         return lastMessage;
     }
+
 
 }

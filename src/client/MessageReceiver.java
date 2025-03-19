@@ -10,6 +10,7 @@ import utils.Message;
 import utils.Contact;
 import utils.ContactList;
 
+
 public class MessageReceiver implements Runnable {
 
 //	private Socket socket;
@@ -19,8 +20,7 @@ public class MessageReceiver implements Runnable {
 	ContactList cList;
 	ClientConnection cConnection;
 	Contact cContact;
-	Contact contact;
-	
+
 	public MessageReceiver(ObjectInputStream ois, ClientConnection cConnection) {
 //		this.socket = socket;
 		this.ois = ois;
@@ -61,6 +61,7 @@ public class MessageReceiver implements Runnable {
 					for (Contact contact: listContact) {
 						cConnection.contactsList.add(contact);
 					}
+
 				}
 
 				if (receivedObject instanceof ChatHistory) {
@@ -77,11 +78,11 @@ public class MessageReceiver implements Runnable {
 					}
 				}
 				
-				if (receivedObject instanceof Contact) {
-					contact = (Contact) receivedObject;
-					cConnection.addContact(contact);
-
-				}
+//				if (receivedObject instanceof Contact) {
+//					contact = (Contact) receivedObject;
+//					cConnection.addContact(contact);
+//
+//				}
 			}
 			
 		} catch (IOException e) {

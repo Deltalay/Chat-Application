@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import utils.*;
-
 
 // HOUR WASTED: 1
 public class ClientConnection implements Connection {
@@ -30,6 +30,7 @@ public class ClientConnection implements Connection {
     public ObservableList<Contact> contactsList;  // ✅ Make sure this is declared
     private ListView<Contact> contactsListView;
     String receiver = "";
+
 
     public ClientConnection(String address, int port, Stage primaryStage) throws IOException {
         this.socket = new Socket(address, port);
@@ -74,7 +75,7 @@ public class ClientConnection implements Connection {
         primaryStage.setTitle("Chat App - " + user.getUsername());
 
         Label receiverName = new Label(receiver);
-        
+
         // Sidebar for Contacts
         contactsListView = new ListView<>(contactsList);
         contactsListView.setCellFactory(param -> new ListCell<Contact>() {
@@ -92,6 +93,7 @@ public class ClientConnection implements Connection {
         contactsListView.setOnMouseClicked(event -> {
             Contact selectedContact = contactsListView.getSelectionModel().getSelectedItem();
             if (selectedContact != null) {
+
 //            	receiver = selectedContact.getContact();
             	receiverName.setText(selectedContact.getContact());
                 openChatSession(selectedContact.getContact());
@@ -122,6 +124,7 @@ public class ClientConnection implements Connection {
         });
         
         findUser.getChildren().addAll(findBtn, inputUser);
+
         // Chat Area
         chatListView = new ListView<>(messageList);
         chatListView.setCellFactory(param -> new ListCell<Message>() {
@@ -131,7 +134,7 @@ public class ClientConnection implements Connection {
                 if (empty || msg == null) {
                     setText(null);
                     setStyle("");
-                    
+
                 } else {
                     if (msg.getSender().equals(user.getUsername())) {
                         setText("Me: " + msg.getContent());
@@ -152,12 +155,12 @@ public class ClientConnection implements Connection {
         Button sendButton = new Button("Send");
         sendButton.setOnAction(e -> {
             String content = messageField.getText();
-//            System.out.println(content + receiverName.getText());
             if (!content.isEmpty()) {
-                Message message = new Message(user.getUsername(), receiverName.getText(), content);
+                Message message = new Message(user.getUsername(), "Hong", content);
                 try {
                     sendMessage(message, oos);
-//                    messageList.add(message);
+                    messageList.add(message);
+
                     messageField.clear();
                 } catch (IOException ex) {
                     System.out.println("Error sending message: " + ex.getMessage());
@@ -169,11 +172,13 @@ public class ClientConnection implements Connection {
         messageBox.setAlignment(Pos.CENTER);
 
         // Main Layout
+
         VBox chatLayout = new VBox(10, receiverName, chatListView, messageBox);
         chatLayout.setAlignment(Pos.CENTER);
         chatLayout.setStyle("-fx-background-color: white; -fx-padding: 10px;");
         
         HBox mainLayout = new HBox(10, findUser, contactsListView, chatLayout);
+
         mainLayout.setStyle("-fx-padding: 20px;");
 
         Scene chatScene = new Scene(mainLayout, primaryStage.getWidth(), primaryStage.getHeight());
@@ -184,22 +189,25 @@ public class ClientConnection implements Connection {
 
     private void openChatSession(String receiver) {
         try {
+
         	this.receiver = receiver;
         	ChatSessionRequest chatSession = new ChatSessionRequest(this.user, receiver);
 	        oos.writeObject(chatSession);
 	        oos.flush();
 	        messageList.clear();
-            
+
         } catch (IOException e) {
             System.out.println("Error opening chat session: " + e.getMessage());
         }
     }
 
     public void addContact(Contact contact) {
+
     	System.out.println("Adding contact: " + contact.getContact());
 
         Platform.runLater(() -> contactsList.add(contact));  // ✅ Now contactsList is properly initialized
         contactsListView.refresh();
+
     }
 
     public void addMessage(Message message) {
@@ -213,7 +221,7 @@ public class ClientConnection implements Connection {
 		
 		return false;
 	}
-    
+
     @Override
     public void sendMessage(Object message, ObjectOutputStream oos) throws IOException {
         oos.writeObject(message);

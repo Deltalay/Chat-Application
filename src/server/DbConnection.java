@@ -217,6 +217,7 @@ public class DbConnection {
             Statement stmt = conn.createStatement();
             
             ResultSet rs ;
+
             String query =
 		            "SELECT u.id, u.username AS contact, " +
 		            "(SELECT m.message_text FROM messages m " +
@@ -262,7 +263,8 @@ public class DbConnection {
                         e.printStackTrace();
                     }
                     
-        return contactList;
+           return contactList;
+
     }
     
     public void save_message(int senderId, int receiverId, String message){
