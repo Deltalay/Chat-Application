@@ -14,6 +14,8 @@ import utils.LoginSuccessResponse;
 import utils.User;
 import utils.UserObjectInputStream;
 import utils.NewUser;
+import utils.Contact;
+import utils.ContactList;
 
 // HOURS WASTED: 7
 
@@ -96,6 +98,7 @@ public class ClientHandler extends Thread implements Connection {
 	    if (isAuthenticated) 
 	    {	
 	    	oos.writeObject(new LoginSuccessResponse(user, "Login Successful"));
+	    	cManager.addClient(this.user.getUserId(), this);
 	    }
     
         else 
@@ -151,6 +154,11 @@ public class ClientHandler extends Thread implements Connection {
       	
 		try {
 			int receiverId = 0;
+			List<Contact> getContactList = cManager.getContactAlls(user.getUserId());
+			ContactList contactList = new ContactList(getContactList);
+			
+            sendMessage(contactList, oos);  // Send the contact list
+			
 
 			while (isAuthenticated) {
 				receivedObject = receiveMessage((ObjectInputStream) uois);
@@ -161,6 +169,7 @@ public class ClientHandler extends Thread implements Connection {
 	            
 					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
 					else {
+						System.out.println("HGi");
 						cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
 //						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
 					}
@@ -176,20 +185,24 @@ public class ClientHandler extends Thread implements Connection {
 					boolean isUserExist = cManager.isReceiverExist(openChatReq.getReceiver());
 					
 					if (isUserExist) {
+						
 
 						receiverId = cManager.getReceiverId(openChatReq.getReceiver());
 						System.out.println("Chat Session Opened For " + 
 											user.getUsername() + ", ID: " + user.getUserId() + " to " + 
 											openChatReq.getReceiver() + ", ID: " + receiverId);
-								
+									
 						List<Message> oldMessages = cManager.getOldMessages(openChatReq.getUser().getUserId(), receiverId);
 						cHistory = new ChatHistory(oldMessages);
 		            
 						sendMessage(cHistory, oos);
-					
 							
 						cManager.addClientChatSession(openChatReq.getUser().getUserId(), receiverId);
 					}
+					
+				
+//					System.out.println("HIII!!!");
+//					System.out.println(openChatReq.getReceiver());
 				}
 			}
 

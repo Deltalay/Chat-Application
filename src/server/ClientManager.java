@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import utils.Message;
+import utils.Contact;
 
 public class ClientManager {
 	
@@ -51,24 +52,36 @@ public class ClientManager {
 		
 		return messageHistory;
 	}
+
+	public List<Contact> getContactAlls(int senderId){
+		
+        return db.getAllContact(senderId);
+
+	}
 	
 	public void sendPrivateMessage(Message message, int senderId, int receiverId) {
 		
 		try {
-		
+			
 			clientSockets.get(senderId).sendMessage(message, clientSockets.get(senderId).oos);	
 			
 			if (isReceiverChatSessionOpen(senderId, receiverId)) 
 				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
 			
 			db.save_message(senderId, receiverId, message.getContent());
-			
+			System.out.println("Cm");
 		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 
+	}
+	
+	public boolean isContactedWithUser() {
+		
+		
+		return true;
 	}
 	
 	public boolean isReceiverChatSessionOpen(int sender, int receiver) {
