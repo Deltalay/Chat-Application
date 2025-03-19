@@ -43,15 +43,7 @@ public class MessageReceiver implements Runnable {
 				if (receivedObject instanceof Message) {
 
 					message = (Message) receivedObject;
-//					line = message.getContent();
-//					
-//					if (line.equals("close")) break;
-//					
-//					if (message.getReceiver().equals("")) 
-//						System.out.println(message.getSender() + "(BroadCast): " + line);
-//					
-//					else System.out.println(message.getSender() + ": " + line);
-					cConnection.messageList.add(message);
+					cConnection.addMessage(message);
 				}
 
 				if (receivedObject instanceof ContactList){
@@ -60,6 +52,7 @@ public class MessageReceiver implements Runnable {
 					
 					for (Contact contact: listContact) {
 						cConnection.contactsList.add(contact);
+						System.out.println("Last messages from " + contact.getContact() + ": " + contact.getMessage());
 					}
 
 				}

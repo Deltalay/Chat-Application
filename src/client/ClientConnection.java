@@ -156,10 +156,10 @@ public class ClientConnection implements Connection {
         sendButton.setOnAction(e -> {
             String content = messageField.getText();
             if (!content.isEmpty()) {
-                Message message = new Message(user.getUsername(), "Hong", content);
+                Message message = new Message(user.getUsername(), receiver, content);
                 try {
                     sendMessage(message, oos);
-                    messageList.add(message);
+//                    addMessage(message);
 
                     messageField.clear();
                 } catch (IOException ex) {
