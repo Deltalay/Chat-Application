@@ -52,7 +52,6 @@ public class MessageReceiver implements Runnable {
 					
 					for (Contact contact: listContact) {
 						cConnection.contactsList.add(contact);
-						System.out.println("Last messages from " + contact.getContact() + ": " + contact.getMessage());
 					}
 
 				}

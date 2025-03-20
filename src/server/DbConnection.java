@@ -218,19 +218,27 @@ public class DbConnection {
             
             ResultSet rs ;
 
-            String query =
-		            "SELECT u.id, u.username AS contact, " +
-		            "(SELECT m.message_text FROM messages m " +
-		            "WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
-		            "   OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
-		            "ORDER BY m.id DESC LIMIT 1) AS last_message " +
-		            "FROM users u " +
-		            "WHERE u.id IN ( " +
-		            "   SELECT sender_id FROM messages WHERE receiver_id = " + sender + " " +
-		            "   UNION " +
-		            "   SELECT receiver_id FROM messages WHERE sender_id = " + sender + " " +
-		            ") " +
-		            "AND u.id != " + sender;
+            String query = "SELECT u.id, u.username AS contact, " +
+                            "(SELECT m.message_text FROM messages m " +
+                            "WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
+                            "   OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
+                            "ORDER BY m.id DESC LIMIT 1) AS last_message, " +
+                            "(SELECT CASE " +
+                            "          WHEN m.sender_id = " + sender + " THEN TRUE " +
+                            "          ELSE FALSE " +
+                            "       END " +
+                            "FROM messages m " +
+                            "WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
+                            "   OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
+                            "ORDER BY m.id DESC LIMIT 1) AS sender_is_last " +
+                            "FROM users u " +
+                            "WHERE u.id IN ( " +
+                            "   SELECT sender_id FROM messages WHERE receiver_id = " + sender + " " +
+                            "   UNION " +
+                            "   SELECT receiver_id FROM messages WHERE sender_id = " + sender + " " +
+                            ") " +
+                            "AND u.id != " + sender + ";";
+
 
             			
             			
@@ -251,8 +259,9 @@ public class DbConnection {
                         while (rs.next()) {
                         String contact = rs.getString("contact");
                         String message = rs.getString("last_message");
+                        boolean isSender = rs.getBoolean("sender_is_last");
             
-                        contactList.add(new Contact(contact, message));
+                        contactList.add(new Contact(contact, message,isSender));
                             
                     }
                         

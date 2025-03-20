@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -71,7 +70,7 @@ public class ClientConnection implements Connection {
         }
     }
 
-    private void startChatUI() {
+    public void startChatUI() {
         primaryStage.setTitle("Chat App - " + user.getUsername());
 
         Label receiverName = new Label(receiver);
@@ -84,8 +83,26 @@ public class ClientConnection implements Connection {
                 super.updateItem(contact, empty);
                 if (empty || contact == null) {
                     setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(contact.getContact());
+                     Label nameLabel = new Label(contact.getContact());
+                    nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+                    // Declare lastMessageLabel before if-else
+                    Label lastMessageLabel;
+                    
+                    if (contact.isSender()) {
+                        lastMessageLabel = new Label("Me: " + contact.getMessage());
+                    } else {
+                        lastMessageLabel = new Label(contact.getContact() + ": " + contact.getMessage());
+                    }
+                     // TODO: Get actual last message
+                    lastMessageLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: normal; -fx-text-fill: gray;");
+
+                    VBox contactBox = new VBox(nameLabel, lastMessageLabel);
+                    contactBox.setSpacing(2);
+
+                    setGraphic(contactBox);
                 }
             }
         });
@@ -122,8 +139,18 @@ public class ClientConnection implements Connection {
         	
         	
         });
-        
+        findBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-size: 12px; -fx-padding: 5px 10px; -fx-background-radius: 10;");
         findUser.getChildren().addAll(findBtn, inputUser);
+        Button viewProfileButton = new Button("View Profile");
+        viewProfileButton.setStyle(
+            "-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-size: 14px; " +
+            "-fx-padding: 12px; -fx-background-radius: 100; -fx-min-width: 50px; -fx-min-height: 50px;"
+        );
+        viewProfileButton.setOnAction(e -> {
+            Profile profilePage = new Profile(this,primaryStage);
+            profilePage.start(primaryStage);
+        });
+        VBox sidebar = new VBox(50,viewProfileButton,findUser);
 
         // Chat Area
         chatListView = new ListView<>(messageList);
@@ -153,6 +180,7 @@ public class ClientConnection implements Connection {
         TextField messageField = new TextField();
         messageField.setPromptText("Type a message...");
         Button sendButton = new Button("Send");
+        messageField.setPrefWidth(300);
         sendButton.setOnAction(e -> {
             String content = messageField.getText();
             if (!content.isEmpty()) {
@@ -172,12 +200,16 @@ public class ClientConnection implements Connection {
         messageBox.setAlignment(Pos.CENTER);
 
         // Main Layout
-
+        
         VBox chatLayout = new VBox(10, receiverName, chatListView, messageBox);
         chatLayout.setAlignment(Pos.CENTER);
         chatLayout.setStyle("-fx-background-color: white; -fx-padding: 10px;");
+
+        HBox.setHgrow(contactsListView, Priority.SOMETIMES);  // 30% width
+        HBox.setHgrow(chatLayout, Priority.ALWAYS);         // 70% width (main focus)
+        HBox.setHgrow(chatLayout, Priority.ALWAYS);
         
-        HBox mainLayout = new HBox(10, findUser, contactsListView, chatLayout);
+        HBox mainLayout = new HBox(10, sidebar, contactsListView, chatLayout);
 
         mainLayout.setStyle("-fx-padding: 20px;");
 
