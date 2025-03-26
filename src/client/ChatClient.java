@@ -16,7 +16,7 @@ import utils.NewUser;
 
 public class ChatClient extends Application {
 
-	static String SERVER_ADDRESS = "172.23.1.19";
+	static String SERVER_ADDRESS = "192.168.100.152";
 
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
@@ -95,9 +95,9 @@ public class ChatClient extends Application {
 			String username = usernameField.getText();
 			String password = passwordField.getText();
 			try {
-//				validate(username, password);
-//				User user = new User(username, password);
-				User user = new User("Jam", "12345678");
+				validate(username, password);
+				User user = new User(username, password);
+				// User user = new User("Jam", "12345678");
 				cc.authenticate(user);
 				if(!isAuthenticated){
 					statusLabel.setText("Login failed. Try again.");

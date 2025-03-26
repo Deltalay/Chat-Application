@@ -127,7 +127,7 @@ public class DbConnection {
             
             
             
-            String query = "SELECT id FROM users WHERE username = ? AND password = ?";
+            String query = "SELECT id,email,dob FROM users WHERE username = ? AND password = ?";
             PreparedStatement pstmt = conn.prepareStatement(query);
             pstmt.setString(1, InputName);
             pstmt.setString(2, InputPassword);
@@ -137,10 +137,14 @@ public class DbConnection {
             if (rs.next()) {
             	
                 int userId = rs.getInt("id");
+                email = rs.getString("email");
+                dob = rs.getString("dob");
 //                ClientHandler.user.
 //                System.out.println(user_id);
                 cHandler.isAuthenticated = true;
                 cHandler.user.setUserId(userId);
+                cHandler.user.setEmail(email);
+                cHandler.user.setDob(dob);
                 conn.close();
                 
             }

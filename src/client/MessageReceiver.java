@@ -7,7 +7,6 @@ import java.util.List;
 
 import utils.ChatHistory;
 import utils.Message;
-import utils.isContactExist;
 import utils.Contact;
 import utils.ContactList;
 

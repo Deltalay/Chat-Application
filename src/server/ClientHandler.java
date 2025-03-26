@@ -13,7 +13,6 @@ import utils.Connection;
 import utils.LoginSuccessResponse;
 import utils.User;
 import utils.UserObjectInputStream;
-import utils.isContactExist;
 import utils.NewUser;
 import utils.Contact;
 import utils.ContactList;

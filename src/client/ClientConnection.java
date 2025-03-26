@@ -39,6 +39,7 @@ public class ClientConnection implements Connection {
     public ObservableList<Contact> contactsList;
     private ListView<Contact> contactsListView;
     String receiver = "";
+    private boolean isReceiverRunning = false;
 
 
     public ClientConnection(String address, int port, Stage primaryStage) throws IOException {
@@ -168,7 +169,10 @@ public class ClientConnection implements Connection {
             }
         });
         
+        if (!isReceiverRunning) {
         new Thread(new MessageReceiver(this.ois, this)).start();
+        isReceiverRunning = true;
+    }
         Label contactError = new Label();
         contactError.setStyle("-fx-text-fill: red;");
         
@@ -193,8 +197,8 @@ public class ClientConnection implements Connection {
         VBox.setMargin(viewProfileButton, new Insets(0, 0, 0, 15));
         
         viewProfileButton.setOnAction(e -> {
-            Profile profilePage = new Profile(this,primaryStage);
-            profilePage.start(primaryStage);
+            Profile profilePage = new Profile(this,primaryStage,this.user.getUserId());
+            profilePage.start();
         });
         
         Label findContactSectionHeader = new Label("Find New Contact");
