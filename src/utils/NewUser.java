@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class NewUser implements Serializable {
     protected String username;
     protected String password;
-    private int userId;
+    protected int userId;
     private String dob;
     private String email;
     private static final long serialVersionUID = 1L;

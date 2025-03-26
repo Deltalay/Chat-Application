@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import utils.Message;
 import utils.User;
@@ -427,7 +428,74 @@ public class DbConnection {
     	return receiverId;
     	
     }
-    
+
+    public void change(User user) {
+        try {
+            // Load the MySQL JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish connection to the database
+            Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
+
+            // Get the change request from the User object (we assume only one change at a time)
+            Map<String, String> changes = user.getChanges();
+            
+            if (changes.isEmpty()) {
+                System.out.println("No changes to apply.");
+                return;
+            }
+            
+            // Retrieve the field name (key) and its new value from the map
+            for (Map.Entry<String, String> entry : changes.entrySet()) {
+                String field = entry.getKey();
+                String newValue = entry.getValue();
+                
+                // Define the SQL query based on the field name
+                String query = "";
+                switch (field) {
+                    case "username":
+                        query = "UPDATE users SET username = ? WHERE id = ?";
+                        break;
+                    case "password":
+                        query = "UPDATE users SET password = ? WHERE id = ?";
+                        break;
+                    case "dob":
+                        query = "UPDATE users SET dob = ? WHERE id = ?";
+                        break;
+                    case "gmail":
+                        query = "UPDATE users SET email = ? WHERE id = ?";
+                        break;
+                    // Add more cases if there are other fields to update
+                    default:
+                        System.out.println("Field not recognized: " + field);
+                        return;
+                }
+
+                // Prepare the SQL statement
+                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                    pstmt.setString(1, newValue);
+                    pstmt.setInt(2, user.getUserId()); // assuming the user object has the user ID
+                    
+                    // Execute the update
+                    int affectedRows = pstmt.executeUpdate();
+                    
+                    if (affectedRows > 0) {
+                        System.out.println("Successfully updated " + field + " to " + newValue);
+                    } else {
+                        System.out.println("Update failed for " + field);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    System.out.println("Error updating " + field + ": " + e.getMessage());
+                }
+            }
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Database connection error: " + e.getMessage());
+        }
+    }
+
     public void setUser(String user) {
     	
         this.username = user;

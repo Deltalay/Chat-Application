@@ -30,8 +30,8 @@ import utils.*;
 public class ClientConnection implements Connection {
 
     private Socket socket;
-    private ObjectInputStream ois;
-    private ObjectOutputStream oos;
+    public ObjectInputStream ois;
+    public ObjectOutputStream oos;
     public User user;
     private Stage primaryStage;
 	public ObservableList<Message> messageList;

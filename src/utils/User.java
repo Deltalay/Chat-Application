@@ -16,6 +16,9 @@ public class User extends NewUser  {
         this.username = username;
         this.password = password;
     }
+	public User(int id){
+		this.userId = id;
+	}
 
 	public Map<String, String> getChanges() {
         return change;

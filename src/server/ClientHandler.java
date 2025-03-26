@@ -190,6 +190,12 @@ public class ClientHandler extends Thread implements Connection {
 					
 					sendMessage(newContact, oos);
 				}
+				if (receivedObject instanceof User) {
+				
+					System.out.println("recieved change");
+					User Cuser = (User) receivedObject;
+					db.change(Cuser);
+				}
 	          
 				if (receivedObject instanceof ChatSessionRequest) {
 	            
