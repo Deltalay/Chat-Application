@@ -7,6 +7,7 @@ import java.util.List;
 
 import utils.ChatHistory;
 import utils.Message;
+import utils.isContactExist;
 import utils.Contact;
 import utils.ContactList;
 
@@ -43,38 +44,62 @@ public class MessageReceiver implements Runnable {
 				if (receivedObject instanceof Message) {
 
 					message = (Message) receivedObject;
-					cConnection.addMessage(message);
+					boolean hasContact = false;
+					
+//					for (Contact contact: cConnection.contactsList) 
+//					{
+//						if (message.getSender().equals(contact.getContact())) 
+//						{
+//							hasContact = true;
+//							contact.setLastMessage(message.getContent());
+//						}
+//					}
+//					
+					for (int i = 0; i < cConnection.contactsList.size(); i++) 
+					{
+						if (message.getSender().equals(cConnection.contactsList.get(i).getContact())) 
+						{
+							hasContact = true;
+							cConnection.updateContactList(i, new Contact(message.getSender(), message.getContent()));
+						}
+					}
+					
+					System.out.println("Sender: " + message.getSender() + ", Receiver: " + message.getReceiver() + ", Content: " + message.getContent());
+					
+					if (!hasContact) cConnection.addContact(new Contact(message.getSender(), message.getContent()));
+					
+					if (cConnection.receiver.equals(message.getSender())) cConnection.addMessage(message);
+					
 				}
 
 				if (receivedObject instanceof ContactList){
 					cList = (ContactList) receivedObject;
 					List<Contact> listContact = cList.getContacts();
 					
-					for (Contact contact: listContact) {
-						cConnection.contactsList.add(contact);
-					}
-
+					for (Contact contact: listContact) cConnection.contactsList.add(contact);
+					
+				}
+				
+				if (receivedObject instanceof Contact) {
+					
+					cContact = (Contact) receivedObject;
+					if (cContact.getContact().isBlank()) System.out.println("User does not exist");
+					else cConnection.addContact(cContact);
 				}
 
 				if (receivedObject instanceof ChatHistory) {
 					
 					cHistory = (ChatHistory) receivedObject;
-					List<Message> oldMessages = cHistory.getMessages();
-					cConnection.messageList.clear();
+					List<Message> oldMessages = cHistory.getMessages();		
+//					for (Message msg: oldMessages) {
+//						
+//						line = msg.getContent();
+//						cConnection.addMessage(msg);
+//					}
 					
-					for (Message msg: oldMessages) {
-						
-						line = msg.getContent();
-						System.out.println(msg.getSender() + ": " + line);
-						cConnection.addMessage(msg);
-					}
+					cConnection.addMessageHistory(oldMessages);
 				}
-				
-//				if (receivedObject instanceof Contact) {
-//					contact = (Contact) receivedObject;
-//					cConnection.addContact(contact);
-//
-//				}
+			
 			}
 			
 		} catch (IOException e) {

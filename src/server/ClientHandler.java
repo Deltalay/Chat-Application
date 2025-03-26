@@ -13,6 +13,7 @@ import utils.Connection;
 import utils.LoginSuccessResponse;
 import utils.User;
 import utils.UserObjectInputStream;
+import utils.isContactExist;
 import utils.NewUser;
 import utils.Contact;
 import utils.ContactList;
@@ -28,6 +29,7 @@ public class ClientHandler extends Thread implements Connection {
 	public String email;
 	public User user;
 	public NewUser newUser;
+	public Contact contact;
   
 	DbConnection db = new DbConnection(this);
 	boolean isAuthenticated = false;
@@ -154,15 +156,12 @@ public class ClientHandler extends Thread implements Connection {
       	
 		try {
 			int receiverId = 0;
-			
-			// CODE BAT, ORT DG MUY NA TROV TE
+
 
 			List<Contact> getContactList = cManager.getContactAlls(user.getUserId());
 			ContactList contactList = new ContactList(getContactList);
 
-//			List<Contact> contactList = cManager.getContactAlls(user.getUserId());
-
-            sendMessage(contactList, oos);  // Send the contact list
+            sendMessage(contactList, oos);
 			
 
 			while (isAuthenticated) {
@@ -176,11 +175,21 @@ public class ClientHandler extends Thread implements Connection {
 					else {
 						System.out.println("HGi");
 						cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
-//						db.save_message(message.getSender(), message.getReceiver(), message.getContent());
 					}
 	            
 					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
 	          
+				}
+				
+				if (receivedObject instanceof Contact) {
+				
+					contact = (Contact) receivedObject;
+					Contact newContact;
+					boolean isUserExist = cManager.isReceiverExist(contact.getContact());
+					if (isUserExist) newContact = new Contact(contact.getContact(), "");
+					else newContact = new Contact("", "");
+					
+					sendMessage(newContact, oos);
 				}
 	          
 				if (receivedObject instanceof ChatSessionRequest) {
@@ -188,6 +197,7 @@ public class ClientHandler extends Thread implements Connection {
 					openChatReq = (ChatSessionRequest) receivedObject;
 					
 					boolean isUserExist = cManager.isReceiverExist(openChatReq.getReceiver());
+					System.out.println(isUserExist);
 					
 					if (isUserExist) {
 						

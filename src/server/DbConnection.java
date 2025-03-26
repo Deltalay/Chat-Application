@@ -364,8 +364,33 @@ public class DbConnection {
     
     public boolean findReceiver(String receiver) {
     	
-    	 // TODO COMPLETE THE MISSING LOGIC TO FIND IF THE RECEIVER EXIST
-    	return true;
+        // TODO COMPLETE THE MISSING LOGIC TO FIND IF THE RECEIVER EXISTS
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
+            String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, receiver);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+ 
+                int count = rs.getInt(1);
+                return count > 0; 
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
     
     public int findReceiverId(String receiver) {

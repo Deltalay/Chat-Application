@@ -16,7 +16,7 @@ import utils.NewUser;
 
 public class ChatClient extends Application {
 
-	static String SERVER_ADDRESS = "172.23.1.52";
+	static String SERVER_ADDRESS = "172.23.1.19";
 
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
@@ -42,6 +42,10 @@ public class ChatClient extends Application {
         registerButton.setPrefWidth(150);
 		loginButton.setPrefHeight(50);
 		registerButton.setPrefHeight(50);
+		
+//		System.getProperty("user.dir"));
+
+		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
 		VBox loginPanel = new VBox(30);
         loginPanel.getChildren().addAll(welcomeLabel, loginButton, registerButton);
@@ -91,23 +95,24 @@ public class ChatClient extends Application {
 			String username = usernameField.getText();
 			String password = passwordField.getText();
 			try {
-				validate(username, password);
-				User user = new User(username, password);
-//				User user = new User("Jam", "12345678");
+//				validate(username, password);
+//				User user = new User(username, password);
+				User user = new User("Jam", "12345678");
 				cc.authenticate(user);
 				if(!isAuthenticated){
 					statusLabel.setText("Login failed. Try again.");
 					statusLabel.setStyle("-fx-text-fill: red;");
 				}
+				
 //			} catch (InvalidCredentialException ex) {
 //				statusLabel.setText(ex.getMessage());
 //				statusLabel.setStyle("-fx-text-fill: red;");
-			}
-			catch (Exception ex) {
+				
+			} catch (Exception ex) {
 				statusLabel.setText("An error occurred during authentication.");
 				statusLabel.setStyle("-fx-text-fill: red;");
 				ex.printStackTrace();
-			}
+			}	
 		});
 
 

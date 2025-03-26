@@ -63,13 +63,14 @@ public class ClientManager {
 		
 		try {
 			
-			clientSockets.get(senderId).sendMessage(message, clientSockets.get(senderId).oos);	
+			clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);	
 			
-			if (isReceiverChatSessionOpen(senderId, receiverId)) 
-				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
+//			if (isReceiverChatSessionOpen(senderId, receiverId) || isReceiverLoggedIn(receiverId)) 
+//				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
 			
-			db.save_message(senderId, receiverId, message.getContent());
-			System.out.println("Cm");
+//			db.save_message(senderId, receiverId, message.getContent());
+			System.out.println("Number of clients are online: " + clientSockets.size());
+			System.out.println("Number of opened chat session: " + chatSessions.size());
 		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -89,9 +90,21 @@ public class ClientManager {
 		Integer session = chatSessions.get(receiver);
 	    return clientSockets.containsKey(receiver) && session != null && session == sender;
 	}
+
+	public boolean isReceiverLoggedIn(int receiver) {
+		
+
+	    return clientSockets.containsKey(receiver);
+	}
+	
 	
 	public boolean isReceiverExist(String receiver) {
 
+		
+		if (db.findReceiver(receiver)) System.out.println("User Exist: " + receiver);
+
+		else System.out.println("User doesnot exist: " + receiver);
+		
 		return db.findReceiver(receiver);
 	}
 
