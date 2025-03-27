@@ -16,7 +16,7 @@ import utils.NewUser;
 
 public class ChatClient extends Application {
 
-	static String SERVER_ADDRESS = "192.168.100.152";
+	static String SERVER_ADDRESS = "192.168.100.38";
 
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
@@ -42,10 +42,6 @@ public class ChatClient extends Application {
         registerButton.setPrefWidth(150);
 		loginButton.setPrefHeight(50);
 		registerButton.setPrefHeight(50);
-		
-//		System.getProperty("user.dir"));
-
-		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
 		VBox loginPanel = new VBox(30);
         loginPanel.getChildren().addAll(welcomeLabel, loginButton, registerButton);
@@ -95,9 +91,9 @@ public class ChatClient extends Application {
 			String username = usernameField.getText();
 			String password = passwordField.getText();
 			try {
-				validate(username, password);
+//				validate(username, password);
 				User user = new User(username, password);
-				// User user = new User("Jam", "12345678");
+//				 User user = new User("Jam", "12345678");
 				cc.authenticate(user);
 				if(!isAuthenticated){
 					statusLabel.setText("Login failed. Try again.");
@@ -190,7 +186,7 @@ public class ChatClient extends Application {
 				
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         		String formattedDob = dob.format(formatter);
-				validate(username, password,formattedDob,email);
+				validate(username, password, formattedDob, email);
 				NewUser user = new NewUser(username, password,formattedDob,email);
 				cc.register(user);
 				

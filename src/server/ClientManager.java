@@ -53,7 +53,7 @@ public class ClientManager {
 		return messageHistory;
 	}
 
-	public List<Contact> getContactAlls(int senderId){
+	public List<Contact> getContactAlls(int senderId) {
 		
         return db.getAllContact(senderId);
 
@@ -63,14 +63,12 @@ public class ClientManager {
 		
 		try {
 			
-			clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);	
+//			clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);	
 			
-//			if (isReceiverChatSessionOpen(senderId, receiverId) || isReceiverLoggedIn(receiverId)) 
-//				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
+			if (isReceiverLoggedIn(receiverId)) 
+				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
 			
 //			db.save_message(senderId, receiverId, message.getContent());
-			System.out.println("Number of clients are online: " + clientSockets.size());
-			System.out.println("Number of opened chat session: " + chatSessions.size());
 		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -79,11 +77,6 @@ public class ClientManager {
 
 	}
 	
-	public boolean isContactedWithUser() {
-		
-		
-		return true;
-	}
 	
 	public boolean isReceiverChatSessionOpen(int sender, int receiver) {
 		

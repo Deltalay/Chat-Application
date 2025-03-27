@@ -172,7 +172,6 @@ public class ClientHandler extends Thread implements Connection {
 	            
 					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
 					else {
-						System.out.println("HGi");
 						cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
 					}
 	            

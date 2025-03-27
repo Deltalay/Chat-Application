@@ -1,16 +1,23 @@
 package utils;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private String sender;
-    private int senderId;
     private String receiver;
-    private int receiverId;
     private String content;
-
+    private Timestamp sentTime;
+    
+    public Message(String sender, String receiver, String content, Timestamp timestamp) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.content = content;
+        this.sentTime = timestamp;
+    }
+    
     public Message(String sender, String receiver, String content) {
         this.sender = sender;
         this.receiver = receiver;
@@ -40,5 +47,13 @@ public class Message implements Serializable {
     public void setContent(String content) {
         this.content = content;
     }
+
+	public Timestamp getSentTime() {
+		return sentTime;
+	}
+
+	public void setSentTime(Timestamp sentTime) {
+		this.sentTime = sentTime;
+	}
 
 }

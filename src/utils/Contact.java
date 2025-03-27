@@ -1,7 +1,7 @@
 package utils;
 
 import java.io.Serializable;
-
+import java.sql.Timestamp;
 
 public class Contact implements Serializable {
     /**
@@ -13,16 +13,21 @@ public class Contact implements Serializable {
     private int sender_id; // Dak joal lg sin
     private String lastMessage;
     private boolean isSender;
+    private Timestamp sendTime;
     
-    public Contact(String contactName, String lastMessage, boolean isSender) {
+    public Contact(String contactName, String lastMessage) {
+    	
+        this.contactName = contactName;
+        this.lastMessage = lastMessage;
+//        this.setSendTime(sendTime);
+    }
+    
+    public Contact(String contactName, String lastMessage, boolean isSender, Timestamp sendTime) {
+    	
         this.contactName = contactName;
         this.lastMessage = lastMessage;
         this.isSender = isSender;
-    }
-    
-    public Contact(String contactName, String lastMessage) {
-        this.contactName = contactName;
-        this.lastMessage = lastMessage;
+        this.setSendTime(sendTime);
     }
     
     public String getContact() {
@@ -49,6 +54,14 @@ public class Contact implements Serializable {
         
     	return isSender;
     }
+
+	public Timestamp getSendTime() {
+		return sendTime;
+	}
+
+	public void setSendTime(Timestamp sendTime) {
+		this.sendTime = sendTime;
+	}
 
 
 }

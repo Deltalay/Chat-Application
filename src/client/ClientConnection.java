@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -91,7 +93,6 @@ public class ClientConnection implements Connection {
         Label receiverName = new Label(receiver);
         receiverName.setFont(Font.font("Arial", FontWeight.BOLD, 16));
 
-        // Sidebar for Contacts
         contactsListView = new ListView<>(contactsList);
         contactsListView.setStyle("-fx-border-width: 0; -fx-background-color: transparent;");
         VBox.setVgrow(contactsListView, Priority.ALWAYS);
@@ -106,9 +107,23 @@ public class ClientConnection implements Connection {
                     
                 } else {
                     setStyle("-fx-background-color: #FEFEFE; -fx-text-fill: #212121");
+                	Timestamp timestamp;
+                	
+                	if (contact.getSendTime() != null) 
+                		timestamp = contact.getSendTime(); 
+                	
+                	else timestamp = new Timestamp(System.currentTimeMillis());
+                	
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                    String formattedTime = sdf.format(timestamp);
+  
                     
                     Label nameLabel = new Label(contact.getContact());
                     Label lastMessageLabel;
+                    Label sentTime = new Label(formattedTime);
+                    
+                    sentTime.setAlignment(Pos.TOP_RIGHT);
+                    sentTime.setTextFill(Color.web("#9E9FA3"));
                     
                     nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #212121");
                     
@@ -118,7 +133,7 @@ public class ClientConnection implements Connection {
                     
                     if (contact.isSender()) {
                     	
-                        lastMessageLabel = new Label("Me: " + contact.getMessage());
+                        lastMessageLabel = new Label("You: " + contact.getMessage());
                     } else {
                     	
                         lastMessageLabel = new Label(contact.getContact() + ": " + contact.getMessage());
@@ -133,14 +148,18 @@ public class ClientConnection implements Connection {
 
                     GridPane contactBox = new GridPane(); 
                     contactBox.setHgap(10);
-                    contactBox.setPadding(new Insets(8, 0, 8, 6));
                     
                     contactBox.add(circle, 0, 0);
                     GridPane.setRowSpan(circle, 2);
                     contactBox.add(nameLabel, 1, 0);
                     contactBox.add(lastMessageLabel, 1, 1);
 
-                    setGraphic(contactBox);
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+                    HBox test = new HBox(contactBox, spacer, sentTime);
+                    test.setPadding(new Insets(8, 0, 8, 6));
+
+                    setGraphic(test);
                     
                     setOnMouseEntered(event -> {
                     	if (!isSelected()) setStyle("-fx-background-color: #FAFAFA; -fx-text-fill: #212121;");
@@ -170,9 +189,10 @@ public class ClientConnection implements Connection {
         });
         
         if (!isReceiverRunning) {
-        new Thread(new MessageReceiver(this.ois, this)).start();
-        isReceiverRunning = true;
-    }
+        	new Thread(new MessageReceiver(this.ois, this)).start();
+        	isReceiverRunning = true;
+        }
+        
         Label contactError = new Label();
         contactError.setStyle("-fx-text-fill: red;");
         
@@ -197,7 +217,7 @@ public class ClientConnection implements Connection {
         VBox.setMargin(viewProfileButton, new Insets(0, 0, 0, 15));
         
         viewProfileButton.setOnAction(e -> {
-            Profile profilePage = new Profile(this,primaryStage,this.user.getUserId());
+            Profile profilePage = new Profile(this, primaryStage, this.user.getUserId());
             profilePage.start();
         });
         
@@ -262,26 +282,80 @@ public class ClientConnection implements Connection {
 
                 } else {
                 	setStyle("-fx-background-color: #F4F6FA; -fx-text-fill: black; -fx-width: 300px");
-                	Text chatText = new Text();
+                	Text sender = new Text();
+                	sender.setFont(Font.font(sender.getFont().getFamily(), FontWeight.BOLD, sender.getFont().getSize()));
+//                	Text chatText = new Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+                	Text chatText = new Text(msg.getContent());	
+//                	chatText.setWrappingWidth(400);
+//                	Text chatText = new Text("OAAAAAEEEEEAAAAAQQQQQAAAAAEEEEEAAAAAQQQQQ");
+                	
+                	if (chatText.getText().length() > 41) 
+                	    chatText.setWrappingWidth(400); 
+                	
+                	Timestamp timestamp;
+                	
+                	if (msg.getSentTime() != null) 
+                		timestamp = msg.getSentTime(); 
+                	
+                	else timestamp = new Timestamp(System.currentTimeMillis());
+                	
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                    String formattedTime = sdf.format(timestamp);
+  
+                	chatText.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+                	      	
+                	Text timeStamp = new Text(formattedTime);
+                	
                 	VBox messageBox = new VBox(chatText);
-                	messageBox.setPrefHeight(50);
-                	messageBox.setPrefWidth(50);
-                	messageBox.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+                	messageBox.setPadding(new Insets(16));
                 	
-                	HBox chatBox = new HBox(messageBox);
+                	GridPane test = new GridPane();
+                	test.setHgap(5); 
+                	VBox messageContainer = new VBox(10, test, messageBox);
                 	
+                	
+                	HBox chatBox = new HBox(messageContainer);
                 	
                 	chatBox.setPadding(new Insets(8));
-//                	chatBox.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
                 	setGraphic(chatBox);
                 	
+                	// You
                     if (msg.getSender().equals(user.getUsername())) {
-                        chatText.setText("Me: " + msg.getContent());
+                    	sender.setText("You");
+                    	test.add(sender, 1, 0);
+                    	test.add(timeStamp, 0, 0);
+                    	messageBox.setBackground(
+                    			new Background(new BackgroundFill(
+                    					Color.web("#132B41"), 
+                    					new CornerRadii(16, 0, 16, 16, empty), 
+                    					Insets.EMPTY
+                    			))
+                    	);
+                    	chatText.setFill(Color.WHITE);
+                    	
                         chatBox.setAlignment(Pos.CENTER_RIGHT);
+                        messageContainer.setAlignment(Pos.CENTER_RIGHT);
+                        test.setAlignment(Pos.BASELINE_RIGHT);
 
+                    // Other
                     } else {
-                        chatText.setText(msg.getSender() + ": " + msg.getContent());
+                    	sender.setText(msg.getSender());
+                    	test.add(sender, 0, 0);
+                    	test.add(timeStamp, 1, 0);
+//                    	
+                    	messageBox.setBackground(
+                    		new Background(new BackgroundFill(
+                    				Color.WHITE, 
+                    				new CornerRadii(0, 16, 16, 16, empty), 
+                    				Insets.EMPTY
+                    		))
+                    	);
+                    	chatText.setFill(Color.BLACK);
+                    	
+//                        chatText.setText(msg.getSender() + ": " + msg.getContent());
                         chatBox.setAlignment(Pos.CENTER_LEFT);
+                        test.setAlignment(Pos.BASELINE_LEFT);
+                        messageContainer.setAlignment(Pos.CENTER_LEFT);
                     }
                 }
             }
@@ -298,13 +372,14 @@ public class ClientConnection implements Connection {
                 try {
                     sendMessage(message, oos);
                     addMessage(message);
-                    LocalDateTime now = LocalDateTime.now();
+                    
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                    
+                    for (int i = 0; i < contactsList.size(); i++) {
+                    	if (receiver.equals(contactsList.get(i).getContact())) 
+                    		updateContactList(i, new Contact(receiver, content, true, new Timestamp(System.currentTimeMillis())));
+                    }
 
-	                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-	
-	                String formattedNow = now.format(formatter);
-	                System.out.println(formattedNow);
-	                System.out.println("Total Contact: " + contactsList.size());
 	                
 	                messageField.clear();
                 } catch (IOException ex) {
@@ -360,7 +435,6 @@ public class ClientConnection implements Connection {
     	System.out.println("Adding contact: " + contact.getContact());
 
         Platform.runLater(() -> contactsList.add(contact));
-        contactsListView.refresh();
 
     }
 
@@ -377,8 +451,7 @@ public class ClientConnection implements Connection {
     
     public void updateContactList(int index, Contact contact) {
     	Platform.runLater(() -> contactsList.set(index, contact));
-//    	Platform.runLater(() -> contactsList.get(index).setLastMessage(contact.getMessage()));
-//    	contactsListView.refresh();
+
     }
 
     @Override

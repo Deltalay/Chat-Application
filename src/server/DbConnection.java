@@ -97,6 +97,7 @@ public class DbConnection {
 										+ "sender_id INT NOT NULL, "
 										+ "receiver_id INT NOT NULL, "
 										+ "message_text TEXT, "
+										+ "sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
 										+ "FOREIGN KEY (sender_id) REFERENCES users(id),"
 										+ "FOREIGN KEY (receiver_id) REFERENCES users(id))";
 				
@@ -173,8 +174,7 @@ public class DbConnection {
             
             ResultSet rs ;
 
-//            String query = "SELECT * FROM messages where sender_id = " + sender + " and receiver_id = " + receiver;
-            String query = "SELECT s.username as 'Sender', r.username as 'Receiver', m.message_text as 'Message' "
+            String query = "SELECT s.username as 'Sender', r.username as 'Receiver', m.message_text as 'Message', m.sent_time "
             			 + "FROM messages m "
             			 + "JOIN users s ON m.sender_id = s.id "
             			 + "JOIN users r ON m.receiver_id = r.id "
@@ -189,18 +189,13 @@ public class DbConnection {
             	
             	String s = rs.getString("Sender");
             	String r = rs.getString("Receiver");
-                String m = rs.getString("Message");  
+                String m = rs.getString("Message");
+                Timestamp timestamp = rs.getTimestamp("sent_time");
                 
-                message = new Message(s, r, m);
+                message = new Message(s, r, m, timestamp);
                 messageList.add(message);
                 
             }
-//            for (int i = 0; i < messageList.size(); i++) {
-//            	
-//                MHistory += messageList.get(i);
-//                if (i < messageList.size() - 1) MHistory += "\n";
-//                
-//            }
             
             conn.close();
             
@@ -228,6 +223,10 @@ public class DbConnection {
                             "WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
                             "   OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
                             "ORDER BY m.id DESC LIMIT 1) AS last_message, " +
+                            "(SELECT m.sent_time FROM messages m " +
+                            "WHERE (m.sender_id = u.id AND m.receiver_id = " + sender + ") " +
+                            "   OR (m.receiver_id = u.id AND m.sender_id = " + sender + ") " +
+                            "ORDER BY m.id DESC LIMIT 1) AS last_sent_time, " +
                             "(SELECT CASE " +
                             "          WHEN m.sender_id = " + sender + " THEN TRUE " +
                             "          ELSE FALSE " +
@@ -265,8 +264,9 @@ public class DbConnection {
                         String contact = rs.getString("contact");
                         String message = rs.getString("last_message");
                         boolean isSender = rs.getBoolean("sender_is_last");
+                        Timestamp sendTime = rs.getTimestamp("last_sent_time");
             
-                        contactList.add(new Contact(contact, message,isSender));
+                        contactList.add(new Contact(contact, message, isSender, sendTime));
                             
                     }
                         
@@ -281,21 +281,25 @@ public class DbConnection {
 
     }
     
-    public void save_message(int senderId, int receiverId, String message){
-        
-    	try {
-    		
+    public void save_message(int senderId, int receiverId, String message) {
+    	
+        try {
+
             Class.forName("com.mysql.cj.jdbc.Driver");
+            
             Connection conn = DriverManager.getConnection(url + "chat", dbusername, dbPassword);
-            Statement stmt = conn.createStatement();
-            System.out.println("DBSM");
-            String query = "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES ('" + senderId + "', '" + receiverId + "', '" + message + "');";
-            stmt.executeUpdate(query);
             
+            String query = "INSERT INTO messages (sender_id, receiver_id, message_text, sent_time) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            
+            stmt.setInt(1, senderId);
+            stmt.setInt(2, receiverId);
+            stmt.setString(3, message);
+
+            stmt.executeUpdate();
             conn.close();
-            
+ 
         } catch(ClassNotFoundException | SQLException e) {
-        	
             e.printStackTrace();
         }
     }
