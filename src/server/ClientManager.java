@@ -63,8 +63,7 @@ public class ClientManager {
 		
 		try {
 			
-//			clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);	
-			
+//			clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);				
 			if (isReceiverLoggedIn(receiverId)) 
 				clientSockets.get(receiverId).sendMessage(message, clientSockets.get(receiverId).oos);
 			

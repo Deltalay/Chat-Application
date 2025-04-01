@@ -16,7 +16,7 @@ import utils.NewUser;
 
 public class ChatClient extends Application {
 
-	static String SERVER_ADDRESS = "192.168.100.38";
+	static String SERVER_ADDRESS = "172.23.2.161";
 
 	static int SERVER_PORT = 3001;
 	static boolean isAuthenticated = false;
@@ -24,9 +24,9 @@ public class ChatClient extends Application {
 	@Override
 	public void start(Stage primaryStage) throws IOException, ClassNotFoundException {
 		
-		ClientConnection cc = new ClientConnection(SERVER_ADDRESS, SERVER_PORT,primaryStage);
+		ClientConnection cc = new ClientConnection(SERVER_ADDRESS, SERVER_PORT, primaryStage);
 		
-		Label welcomeLabel = new Label("Welcome! Please choose a way");
+		Label welcomeLabel = new Label("Welcome! Please login or register");
 		welcomeLabel.setStyle("-fx-font-size: 24px");
 
         Button loginButton = new Button("Login");
@@ -57,7 +57,7 @@ public class ChatClient extends Application {
 
 	}
 	
-	private void login_page(Stage primaryStage,ClientConnection cc) {
+	private void login_page(Stage primaryStage, ClientConnection cc) {
 		
         primaryStage.setTitle("Login");
 
@@ -92,10 +92,10 @@ public class ChatClient extends Application {
 			String password = passwordField.getText();
 			try {
 //				validate(username, password);
-				User user = new User(username, password);
-//				 User user = new User("Jam", "12345678");
+//				User user = new User(username, password);
+				 User user = new User("Jam", "12345678");
 				cc.authenticate(user);
-				if(!isAuthenticated){
+				if(!isAuthenticated) {
 					statusLabel.setText("Login failed. Try again.");
 					statusLabel.setStyle("-fx-text-fill: red;");
 				}
@@ -110,7 +110,6 @@ public class ChatClient extends Application {
 				ex.printStackTrace();
 			}	
 		});
-
 
 		HBox topBar = new HBox(10);
         topBar.setAlignment(Pos.TOP_LEFT);

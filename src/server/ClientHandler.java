@@ -87,6 +87,7 @@ public class ClientHandler extends Thread implements Connection {
 		}
 
 	}
+	
   
 	@Override
 	public void authenticate(User user) throws IOException, ClassNotFoundException {
@@ -171,9 +172,8 @@ public class ClientHandler extends Thread implements Connection {
 					message = (Message) receivedObject;
 	            
 					if (message.getReceiver() == "") cManager.broadcastMessages(message, this);
-					else {
-						cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
-					}
+					else cManager.sendPrivateMessage(message, this.user.getUserId(), receiverId);
+					
 	            
 					System.out.println(message.getSender() + " to " + message.getReceiver() + ": " + message.getContent());
 	          
@@ -189,6 +189,7 @@ public class ClientHandler extends Thread implements Connection {
 					
 					sendMessage(newContact, oos);
 				}
+				
 				if (receivedObject instanceof User) {
 				
 					System.out.println("recieved change");

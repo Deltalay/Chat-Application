@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,9 +23,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import utils.*;
 
@@ -42,7 +46,7 @@ public class ClientConnection implements Connection {
     private ListView<Contact> contactsListView;
     String receiver = "";
     private boolean isReceiverRunning = false;
-
+    String currentDate = "";
 
     public ClientConnection(String address, int port, Stage primaryStage) throws IOException {
         this.socket = new Socket(address, port);
@@ -271,109 +275,196 @@ public class ClientConnection implements Connection {
         chatListView = new ListView<>(messageList);
         chatListView.setStyle("-fx-border-width: 0; -fx-background-color: transparent;");
         VBox.setVgrow(chatListView, Priority.ALWAYS);
-        chatListView.setCellFactory(param -> new ListCell<Message>() {
-            @Override
-            protected void updateItem(Message msg, boolean empty) {
-                super.updateItem(msg, empty);
-                if (empty || msg == null) {
-                    setText(null);
-                    setStyle("-fx-background-color: #F4F6FA");
-                    setGraphic(null);
-
-                } else {
-                	setStyle("-fx-background-color: #F4F6FA; -fx-text-fill: black; -fx-width: 300px");
-                	Text sender = new Text();
-                	sender.setFont(Font.font(sender.getFont().getFamily(), FontWeight.BOLD, sender.getFont().getSize()));
-//                	Text chatText = new Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-                	Text chatText = new Text(msg.getContent());	
-//                	chatText.setWrappingWidth(400);
-//                	Text chatText = new Text("OAAAAAEEEEEAAAAAQQQQQAAAAAEEEEEAAAAAQQQQQ");
-                	
-                	if (chatText.getText().length() > 41) 
-                	    chatText.setWrappingWidth(400); 
-                	
-                	Timestamp timestamp;
-                	
-                	if (msg.getSentTime() != null) 
-                		timestamp = msg.getSentTime(); 
-                	
-                	else timestamp = new Timestamp(System.currentTimeMillis());
-                	
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-                    String formattedTime = sdf.format(timestamp);
-  
-                	chatText.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-                	      	
-                	Text timeStamp = new Text(formattedTime);
-                	
-                	VBox messageBox = new VBox(chatText);
-                	messageBox.setPadding(new Insets(16));
-                	
-                	GridPane test = new GridPane();
-                	test.setHgap(5); 
-                	VBox messageContainer = new VBox(10, test, messageBox);
-                	
-                	
-                	HBox chatBox = new HBox(messageContainer);
-                	
-                	chatBox.setPadding(new Insets(8));
-                	setGraphic(chatBox);
-                	
-                	// You
-                    if (msg.getSender().equals(user.getUsername())) {
-                    	sender.setText("You");
-                    	test.add(sender, 1, 0);
-                    	test.add(timeStamp, 0, 0);
-                    	messageBox.setBackground(
-                    			new Background(new BackgroundFill(
-                    					Color.web("#132B41"), 
-                    					new CornerRadii(16, 0, 16, 16, empty), 
-                    					Insets.EMPTY
-                    			))
-                    	);
-                    	chatText.setFill(Color.WHITE);
-                    	
-                        chatBox.setAlignment(Pos.CENTER_RIGHT);
-                        messageContainer.setAlignment(Pos.CENTER_RIGHT);
-                        test.setAlignment(Pos.BASELINE_RIGHT);
-
-                    // Other
-                    } else {
-                    	sender.setText(msg.getSender());
-                    	test.add(sender, 0, 0);
-                    	test.add(timeStamp, 1, 0);
-//                    	
-                    	messageBox.setBackground(
-                    		new Background(new BackgroundFill(
-                    				Color.WHITE, 
-                    				new CornerRadii(0, 16, 16, 16, empty), 
-                    				Insets.EMPTY
-                    		))
-                    	);
-                    	chatText.setFill(Color.BLACK);
-                    	
-//                        chatText.setText(msg.getSender() + ": " + msg.getContent());
-                        chatBox.setAlignment(Pos.CENTER_LEFT);
-                        test.setAlignment(Pos.BASELINE_LEFT);
-                        messageContainer.setAlignment(Pos.CENTER_LEFT);
-                    }
-                }
-            }
-        });
+        
+	        chatListView.setCellFactory(param -> new ListCell<Message>() {
+	            @Override
+	            protected void updateItem(Message msg, boolean empty) {
+	                super.updateItem(msg, empty);
+	                if (empty || msg == null) {
+	                    setText(null);
+	                    setStyle("-fx-background-color: #F4F6FA");
+	                    setGraphic(null);
+	
+	                } else {
+	                	setStyle("-fx-background-color: #F4F6FA; -fx-text-fill: black; -fx-width: 300px");
+	                	
+	                	Timestamp timestamp;
+	                	
+	                	if (msg.getSentTime() != null) 
+	                		timestamp = msg.getSentTime(); 
+	                	
+	                	else timestamp = new Timestamp(System.currentTimeMillis());
+	                	
+	                	if (msg.getReceiver() == null && msg.getSender() == null && msg.getContent() == null) 
+	                	{
+	                		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+	                		String date = dateFormat.format(timestamp);
+	                		
+	                		Label dateLabel = new Label(date);
+	                		dateLabel.setTextFill(Color.web("#ABABAB"));
+	                		dateLabel.setFont(Font.font(dateLabel.getFont().getFamily(), FontWeight.BOLD, dateLabel.getFont().getSize()));
+	                		
+	                		HBox dateSeparator = new HBox(dateLabel);
+	                		dateSeparator.setAlignment(Pos.CENTER);
+	                		dateSeparator.setPadding(new Insets(8));
+	                		
+	                		setGraphic(dateSeparator);                		
+	                	}
+	                	
+	                	else {
+	                		
+	                		Text sender = new Text();
+	                    	sender.setFont(Font.font(sender.getFont().getFamily(), FontWeight.BOLD, sender.getFont().getSize()));
+	//                    	Text chatText = new Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+	                    	Text chatText = new Text(msg.getContent());	
+	//                    	chatText.setWrappingWidth(400);
+	//                    	Text chatText = new Text("OAAAAAEEEEEAAAAAQQQQQAAAAAEEEEEAAAAAQQQQQ");
+	                    	
+	                    	if (chatText.getText().length() > 41) 
+	                    	    chatText.setWrappingWidth(400); 
+	
+	                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+	                        String formattedTime = sdf.format(timestamp);
+	                       
+	                    	chatText.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+	                    	      	
+	                    	Text timeStamp = new Text(formattedTime);
+	                    	
+	                    	VBox messageBox = new VBox(chatText);
+	                    	messageBox.setPadding(new Insets(16));
+	                    	
+	                    	GridPane test = new GridPane();
+	                    	test.setHgap(5); 
+	                    	VBox messageContainer = new VBox(10, test, messageBox);
+	                    	
+	                    	HBox chatBox = new HBox(messageContainer);
+	                    	chatBox.setPadding(new Insets(8)); 
+	                        setGraphic(chatBox);
+	                        
+	                    	// You
+	                        if (msg.getSender().equals(user.getUsername())) {
+	                        	sender.setText("You");
+	                        	test.add(sender, 1, 0);
+	                        	test.add(timeStamp, 0, 0);
+	                        	messageBox.setBackground(
+	                        			new Background(new BackgroundFill(
+	                        					Color.web("#132B41"), 
+	                        					new CornerRadii(16, 0, 16, 16, empty), 
+	                        					Insets.EMPTY
+	                        			))
+	                        	);
+	                        	chatText.setFill(Color.WHITE);
+	                        	
+	                            chatBox.setAlignment(Pos.CENTER_RIGHT);
+	                            messageContainer.setAlignment(Pos.CENTER_RIGHT);
+	                            test.setAlignment(Pos.BASELINE_RIGHT);
+	
+	                        // Other
+	                        } else {
+	                        	sender.setText(msg.getSender());
+	                        	test.add(sender, 0, 0);
+	                        	test.add(timeStamp, 1, 0);
+	//                        	
+	                        	messageBox.setBackground(
+	                        		new Background(new BackgroundFill(
+	                        				Color.WHITE, 
+	                        				new CornerRadii(0, 16, 16, 16, empty), 
+	                        				Insets.EMPTY
+	                        		))
+	                        	);
+	                        	chatText.setFill(Color.BLACK);
+	                        	
+	//                            chatText.setText(msg.getSender() + ": " + msg.getContent());
+	                            chatBox.setAlignment(Pos.CENTER_LEFT);
+	                            test.setAlignment(Pos.BASELINE_LEFT);
+	                            messageContainer.setAlignment(Pos.CENTER_LEFT);
+	                        }
+	                	}
+	                }
+	            }
+	        });
+	        
+	        SVGPath addImage = new SVGPath();
+	        addImage.setContent("M21 12v7a2 2 0 0 1-2 2h-3m5-9c-6.442 0-10.105 1.985-12.055 4.243M21 12v-1.5M3 16v3a2 2 0 0 0 2 2v0h11M3 16V5a2 2 0 0 1 2-2h8M3 16c1.403-.234 3.637-.293 5.945.243M16 21c-1.704-2.768-4.427-4.148-7.055-4.757M8.5 7C8 7 7 7.3 7 8.5S8 10 8.5 10S10 9.7 10 8.5S9 7 8.5 7M19 2v3m0 3V5m0 0h3m-3 0h-3");
+	        addImage.setStrokeWidth(1.8);
+	        addImage.setStroke(Color.BLACK);
+	        addImage.setFill(Color.TRANSPARENT);
+	        
+	        
+	        Button addImageButton = new Button();
+	        addImageButton.setGraphic(addImage);
+	        addImageButton.setBorder(null);
+	        addImageButton.setBackground(null);
+	        
+	        addImageButton.setOnAction(e -> {
+	
+	        	FileChooser fileChooser = new FileChooser();
+	            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
+	            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));            
+	            List<File> selectedFiles = fileChooser.showOpenMultipleDialog(primaryStage);
+	            if (selectedFiles != null) 
+	                selectedFiles.forEach(file -> System.out.println("Selected file: " + file.getAbsolutePath()));
+	            
+	            
+	        });
+	//        addImageButton.setBackground(
+	//        		new Background(new BackgroundFill(
+	//        				Color.BLUE, 
+	//        				null, 
+	//        				Insets.EMPTY
+	//        		))
+	//        );
+	        addImageButton.setPadding(new Insets(0));
         
         TextField messageField = new TextField();
         messageField.setPromptText("Type a message...");
+        messageField.setBorder(new Border(new BorderStroke(
+        		Color.web("#e0e0e0"), 
+                BorderStrokeStyle.SOLID, 
+                new CornerRadii(6, false), 
+                new BorderWidths(1, 1, 1, 1)
+        )));
+        messageField.setPadding(new Insets(9));
+        messageField.setBackground(
+        		new Background(new BackgroundFill(
+        				Color.web("#F8FAFB"), 
+        				new CornerRadii(6, false), 
+        				Insets.EMPTY
+        		))
+        );
+        HBox.setMargin(messageField, new Insets(0, 0, 0, 0));
+        HBox.setHgrow(messageField, Priority.ALWAYS);
+        
+        SVGPath sendMessageIcon = new SVGPath();
+        sendMessageIcon.setContent("m14 10l-3 3m9.288-9.969a.535.535 0 0 1 .68.681l-5.924 16.93a.535.535 0 0 1-.994.04l-3.219-7.242a.54.54 0 0 0-.271-.271l-7.242-3.22a.535.535 0 0 1 .04-.993z");
+        sendMessageIcon.setStroke(Color.WHITE);
+        sendMessageIcon.setFill(Color.TRANSPARENT);
+        sendMessageIcon.setStrokeWidth(1.5);
+        sendMessageIcon.setScaleX(0.8);
+        sendMessageIcon.setScaleY(0.8);
+        
         Button sendButton = new Button("Send");
-        messageField.setPrefWidth(300);
+        sendButton.setBackground(
+        		new Background(new BackgroundFill(
+        				Color.web("#14293D"), 
+        				new CornerRadii(8, false), 
+        				Insets.EMPTY
+        		))
+        );
+        
+        sendButton.setPadding(new Insets(8, 12, 8, 8));
+        sendButton.setTextFill(Color.WHITE);
+        sendButton.setFont(Font.font(sendButton.getFont().getFamily(), FontWeight.NORMAL, 14));
+        sendButton.setGraphic(sendMessageIcon);
+        sendButton.setAlignment(Pos.CENTER);
+        sendButton.setGraphicTextGap(6);
         sendButton.setOnAction(e -> {
             String content = messageField.getText();
             if (!content.isEmpty()) {
-                Message message = new Message(user.getUsername(), receiver, content);
+                Message message = new Message(user.getUsername(), receiver, content, new Timestamp(System.currentTimeMillis()));
                 try {
                     sendMessage(message, oos);
                     addMessage(message);
-                    
-                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                     
                     for (int i = 0; i < contactsList.size(); i++) {
                     	if (receiver.equals(contactsList.get(i).getContact())) 
@@ -388,9 +479,10 @@ public class ClientConnection implements Connection {
             }
         });
 
-        HBox messageBox = new HBox(10, messageField, sendButton);
-        messageBox.setAlignment(Pos.CENTER);     
+        HBox messageBox = new HBox(12, addImageButton, messageField, sendButton);   
         messageBox.setPrefHeight(50);
+        messageBox.setPadding(new Insets(16));
+        messageBox.setAlignment(Pos.CENTER);
         
         HBox chatHeader = new HBox(receiverName);
         chatHeader.setPrefHeight(50);
@@ -442,10 +534,15 @@ public class ClientConnection implements Connection {
         Platform.runLater(() -> this.messageList.add(message));
     }
     
-    public void addMessageHistory(List<Message> chatHistory) {
-    	ObservableList<Message> observableNewMessages = FXCollections.observableArrayList(chatHistory);
+//    public void addMessageHistory(List<Message> chatHistory) {
+//    	ObservableList<Message> observableNewMessages = FXCollections.observableArrayList(chatHistory);
+//    	Platform.runLater(() -> {
+//    	    messageList.setAll(observableNewMessages);
+//    	});
+//    }
+    public void addMessageHistory(ObservableList<Message> chatHistory) {
     	Platform.runLater(() -> {
-    	    messageList.setAll(observableNewMessages);
+    	    messageList.setAll(chatHistory);
     	});
     }
     

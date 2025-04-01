@@ -1,8 +1,13 @@
 package client;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import utils.ChatHistory;
@@ -13,7 +18,6 @@ import utils.ContactList;
 
 public class MessageReceiver implements Runnable {
 
-//	private Socket socket;
 	ObjectInputStream ois;
 	Message message;
 	ChatHistory cHistory;
@@ -44,16 +48,7 @@ public class MessageReceiver implements Runnable {
 
 					message = (Message) receivedObject;
 					boolean hasContact = false;
-					
-//					for (Contact contact: cConnection.contactsList) 
-//					{
-//						if (message.getSender().equals(contact.getContact())) 
-//						{
-//							hasContact = true;
-//							contact.setLastMessage(message.getContent());
-//						}
-//					}
-//					
+										
 					for (int i = 0; i < cConnection.contactsList.size(); i++) 
 					{
 						if (message.getSender().equals(cConnection.contactsList.get(i).getContact())) 
@@ -90,13 +85,25 @@ public class MessageReceiver implements Runnable {
 					
 					cHistory = (ChatHistory) receivedObject;
 					List<Message> oldMessages = cHistory.getMessages();		
-//					for (Message msg: oldMessages) {
-//						
-//						line = msg.getContent();
-//						cConnection.addMessage(msg);
-//					}
+					ObservableList<Message> chatList = FXCollections.observableArrayList();
+					String currentDate = "";
 					
-					cConnection.addMessageHistory(oldMessages);
+					for (Message msg: oldMessages) {
+						Timestamp timestamp = msg.getSentTime();
+	                	SimpleDateFormat currentDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+	                    String currentDateString = currentDateFormat.format(timestamp);
+	                    
+	                    if (!currentDateString.equals(currentDate)) {
+	                    	
+	                    	chatList.add(new Message(null, null, null, timestamp));
+	                    	currentDate = currentDateString;
+	                    }
+	                    
+	                    chatList.add(msg);
+	                    
+					}
+					
+					cConnection.addMessageHistory(chatList);
 				}
 			
 			}
